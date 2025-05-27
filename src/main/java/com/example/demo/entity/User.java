@@ -26,14 +26,16 @@ public class User {
     
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
-    
-    @Column(columnDefinition = "TEXT")
+      @Column(columnDefinition = "TEXT")
     private String address;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role = UserRole.CUSTOMER;
     
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
-    
-    // Constructors
+      // Constructors
     public User() {}
     
     public User(String username, String password, String email, String fullName) {
@@ -41,6 +43,15 @@ public class User {
         this.password = password;
         this.email = email;
         this.fullName = fullName;
+        this.role = UserRole.CUSTOMER; // default role
+    }
+    
+    public User(String username, String password, String email, String fullName, UserRole role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.fullName = fullName;
+        this.role = role;
     }
     
     // Getters and Setters
@@ -61,9 +72,11 @@ public class User {
     
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-    
-    public String getAddress() { return address; }
+      public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
     
     public List<Order> getOrders() { return orders; }
     public void setOrders(List<Order> orders) { this.orders = orders; }

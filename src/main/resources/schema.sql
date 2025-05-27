@@ -17,6 +17,13 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Tambahkan tipe ENUM untuk role
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('customer', 'admin', 'cashier');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- Tabel Users
 CREATE TABLE Users (
     user_id SERIAL PRIMARY KEY,
@@ -25,7 +32,8 @@ CREATE TABLE Users (
     email VARCHAR(100) NOT NULL UNIQUE,
     full_name VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20),
-    address TEXT
+    address TEXT,
+    role user_role NOT NULL DEFAULT 'customer'
 );
 
 -- Tabel Categories
@@ -123,3 +131,4 @@ CREATE INDEX idx_orderdetails_product_id ON OrderDetails(product_id);
 CREATE INDEX idx_payments_order_id ON Payments(order_id);
 CREATE INDEX idx_ordercustomizations_detail_id ON OrderCustomizations(detail_id);
 CREATE INDEX idx_orderpromotions_order_id ON OrderPromotions(order_id);
+CREATE INDEX idx_users_role ON Users(role);

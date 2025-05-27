@@ -1,11 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.User;
+import com.example.demo.entity.UserRole;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -57,10 +59,50 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/test")
+    }    @GetMapping("/test")
     public String testEndpoint() {
         return "Hello from Spring Boot! UserController test endpoint is working! 🚀";
+    }
+    
+    // Role-based endpoints
+    @GetMapping("/role/{role}")
+    public List<User> getUsersByRole(@PathVariable String role) {
+        try {
+            UserRole userRole = UserRole.fromString(role);
+            return userService.getUsersByRole(userRole);
+        } catch (IllegalArgumentException e) {
+            return List.of(); // Return empty list for invalid role
+        }
+    }
+    
+    @GetMapping("/{id}/check-role")
+    public ResponseEntity<Map<String, Boolean>> checkUserRole(@PathVariable Long id) {
+        return userService.getUserById(id).map(user -> {
+            Map<String, Boolean> roleStatus = Map.of(
+                "isAdmin", user.getRole() == UserRole.ADMIN,
+                "isCashier", user.getRole() == UserRole.CASHIER,
+                "isCustomer", user.getRole() == UserRole.CUSTOMER
+            );
+            return ResponseEntity.ok(roleStatus);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> updateUserRole(@PathVariable Long id, @RequestBody Map<String, String> roleRequest) {
+        try {
+            String roleStr = roleRequest.get("role");
+            if (roleStr == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            UserRole role = UserRole.fromString(roleStr);
+            return userService.getUserById(id).map(user -> {
+                user.setRole(role);
+                User updatedUser = userService.updateUser(id, user);
+                return ResponseEntity.ok(updatedUser);
+            }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
