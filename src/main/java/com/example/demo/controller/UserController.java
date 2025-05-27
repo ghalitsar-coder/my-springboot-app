@@ -58,4 +58,9 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/test")
+    public String testEndpoint() {
+        return "Hello from Spring Boot! UserController test endpoint is working! 🚀";
+    }
 }

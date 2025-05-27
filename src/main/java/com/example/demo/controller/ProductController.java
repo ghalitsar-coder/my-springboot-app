@@ -14,6 +14,11 @@ public class ProductController {
     @Autowired
     private ProductService productService;
     
+    @GetMapping("/hello")
+    public String testConnection() {
+        return "Hello from Spring Boot! API connection is working! 🚀";
+    }
+    
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
