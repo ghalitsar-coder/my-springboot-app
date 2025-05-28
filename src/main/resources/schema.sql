@@ -1,28 +1,36 @@
 -- Membuat tipe ENUM untuk status dan metode pembayaran (dengan handling jika sudah ada)
-DO $$ BEGIN
+DO $$
+BEGIN
     CREATE TYPE order_status AS ENUM ('pending', 'prepared', 'delivered', 'cancelled');
 EXCEPTION
     WHEN duplicate_object THEN null;
-END $$;
+END
+$$;
 
-DO $$ BEGIN
+DO $$
+BEGIN
     CREATE TYPE payment_type AS ENUM ('cash', 'card', 'digital');
 EXCEPTION
     WHEN duplicate_object THEN null;
-END $$;
+END
+$$;
 
-DO $$ BEGIN
+DO $$
+BEGIN
     CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed');
 EXCEPTION
     WHEN duplicate_object THEN null;
-END $$;
+END
+$$;
 
 -- Tambahkan tipe ENUM untuk role
-DO $$ BEGIN
+DO $$
+BEGIN
     CREATE TYPE user_role AS ENUM ('customer', 'admin', 'cashier');
 EXCEPTION
     WHEN duplicate_object THEN null;
-END $$;
+END
+$$;
 
 -- Tabel Users
 CREATE TABLE Users (

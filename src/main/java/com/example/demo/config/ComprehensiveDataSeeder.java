@@ -45,20 +45,24 @@ public class ComprehensiveDataSeeder {
     
     @Autowired
     private OrderPromotionRepository orderPromotionRepository;
-      @Autowired
+    
+    @Autowired
     private ReviewRepository reviewRepository;
     
     @Autowired
-    private OrderCustomizationRepository orderCustomizationRepository;    @Bean
+    private OrderCustomizationRepository orderCustomizationRepository;      @Bean
     @Profile("!prod") // Don't run this in production
-    public CommandLineRunner comprehensiveDataSeeder() {
+    public CommandLineRunner seedData() {
         return args -> {
             System.out.println("SEEDER DEBUG: Comprehensive data seeder is running!");
             System.out.println("SEEDER DEBUG: Current user count: " + userRepository.count());
+            System.out.println("SEEDER DEBUG: Current product count: " + productRepository.count());
+            System.out.println("SEEDER DEBUG: Current category count: " + categoryRepository.count());
             
-            // Check if we have any data
-            if (userRepository.count() > 0) {
-                System.out.println("Database already contains data. Skipping comprehensive data seeding.");
+            // Check if we have product data, not users
+            if (productRepository.count() > 0) {
+                System.out.println("Database already contains products. Skipping comprehensive data seeding.");
+                System.out.println("To force seeding, use -DforceSeeding=true as JVM argument or call /api/admin/seeder/force endpoint.");
                 return;
             }
             
@@ -156,6 +160,10 @@ public class ComprehensiveDataSeeder {
         return users;
     }
     
+    public List<Category> seedCategoriesManually() {
+        return seedCategories();
+    }
+    
     private List<Category> seedCategories() {
         System.out.println("Seeding categories data...");
         List<Category> categories = new ArrayList<>();
@@ -199,6 +207,10 @@ public class ComprehensiveDataSeeder {
         }
         
         return categories;
+    }
+    
+    public List<Product> seedProductsManually(List<Category> categories) {
+        return seedProducts(categories);
     }
     
     private List<Product> seedProducts(List<Category> categories) {
@@ -323,6 +335,10 @@ public class ComprehensiveDataSeeder {
         return products;
     }
     
+    public List<Customization> seedCustomizationsManually() {
+        return seedCustomizations();
+    }
+    
     private List<Customization> seedCustomizations() {
         System.out.println("Seeding customizations data...");
         List<Customization> customizations = new ArrayList<>();
@@ -373,6 +389,10 @@ public class ComprehensiveDataSeeder {
         return customizations;
     }
     
+    public List<Promotion> seedPromotionsManually() {
+        return seedPromotions();
+    }
+    
     private List<Promotion> seedPromotions() {
         System.out.println("Seeding promotions data...");
         List<Promotion> promotions = new ArrayList<>();
@@ -421,6 +441,10 @@ public class ComprehensiveDataSeeder {
         return promotions;
     }
     
+    public List<Order> seedOrdersManually(List<User> users) {
+        return seedOrders(users);
+    }
+    
     private List<Order> seedOrders(List<User> users) {
         System.out.println("Seeding orders data...");
         List<Order> orders = new ArrayList<>();
@@ -459,6 +483,10 @@ public class ComprehensiveDataSeeder {
         }
         
         return orders;
+    }
+    
+    public void seedOrderDetailsManually(List<Order> orders, List<Product> products, List<Customization> customizations) {
+        seedOrderDetails(orders, products, customizations);
     }
     
     private void seedOrderDetails(List<Order> orders, List<Product> products, List<Customization> customizations) {
@@ -501,55 +529,136 @@ public class ComprehensiveDataSeeder {
             e.printStackTrace();
         }
     }
+      public void seedPaymentsManually(List<Order> orders) {
+        seedPayments(orders);
+    }
     
     private void seedPayments(List<Order> orders) {
         System.out.println("Seeding payments data...");
         
         try {
+            System.out.println("Found " + orders.size() + " orders to create payments for");
+            
+            // First, check existing payments to avoid duplicates
+            long existingPaymentCount = paymentRepository.count();
+            System.out.println("DEBUG: Existing payment count before seeding: " + existingPaymentCount);
+            
+            int paymentsCreated = 0;
+            
             for (Order order : orders) {
-                // Calculate order total
-                BigDecimal total = calculateOrderTotal(order);
+                // Log order details
+                System.out.println("Processing payment for Order ID: " + order.getOrderId() + ", Status: " + order.getStatus());
+                
+                // Load a fresh copy of the order with all related entities
+                Order freshOrder = orderRepository.findById(order.getOrderId()).orElse(order);
+                
+                // Check if order already has payments
+                List<Payment> existingPayments = freshOrder.getPayments();
+                if (existingPayments != null && !existingPayments.isEmpty()) {
+                    System.out.println("DEBUG: Order ID " + order.getOrderId() + " already has " + existingPayments.size() + " payments, skipping");
+                    continue;
+                }
+                
+                // Calculate order total with the fresh order
+                BigDecimal total = calculateOrderTotal(freshOrder);
+                
+                if (total.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("WARNING: Calculated total for Order ID " + order.getOrderId() + " is zero or negative: " + total);
+                    // Use a default amount for demo purposes
+                    total = new BigDecimal("50000.00");
+                    System.out.println("DEBUG: Using default amount: " + total + " for Order ID: " + order.getOrderId());
+                }
                 
                 // Create payment
-                if (OrderStatus.DELIVERED.equals(order.getStatus())) {
-                    // Completed payment for delivered orders
-                    Payment payment = new Payment(order, PaymentType.DIGITAL, total, PaymentStatus.COMPLETED);
-                    payment.setPaymentMethod("Credit Card");
-                    payment.setTransactionId("TRX" + System.currentTimeMillis());
-                    payment.setPaymentDate(order.getOrderDate().plusMinutes(15));
-                    paymentRepository.save(payment);
-                } else if (OrderStatus.PENDING.equals(order.getStatus())) {
-                    // Pending payment
-                    Payment payment = new Payment(order, PaymentType.DIGITAL, total, PaymentStatus.PENDING);
-                    payment.setPaymentMethod("Virtual Account");
-                    payment.setBank("BCA");
-                    payment.setVaNumber("1234567890");
-                    paymentRepository.save(payment);
+                try {
+                    if (OrderStatus.DELIVERED.equals(order.getStatus())) {
+                        // Completed payment for delivered orders
+                        Payment payment = new Payment(freshOrder, PaymentType.DIGITAL, total, PaymentStatus.COMPLETED);
+                        payment.setPaymentMethod("Credit Card");
+                        payment.setTransactionId("TRX" + System.currentTimeMillis() + order.getOrderId());
+                        payment.setPaymentDate(order.getOrderDate().plusMinutes(15));
+                        Payment savedPayment = paymentRepository.save(payment);
+                        paymentsCreated++;
+                        System.out.println("Created COMPLETED payment ID: " + savedPayment.getPaymentId() + " for Order ID: " + order.getOrderId() + " with amount: " + total);
+                    } else if (OrderStatus.PENDING.equals(order.getStatus())) {
+                        // Pending payment
+                        Payment payment = new Payment(freshOrder, PaymentType.DIGITAL, total, PaymentStatus.PENDING);
+                        payment.setPaymentMethod("Virtual Account");
+                        payment.setBank("BCA");
+                        payment.setVaNumber("1234567890" + order.getOrderId());
+                        Payment savedPayment = paymentRepository.save(payment);
+                        paymentsCreated++;
+                        System.out.println("Created PENDING payment ID: " + savedPayment.getPaymentId() + " for Order ID: " + order.getOrderId() + " with amount: " + total);
+                    }
+                } catch (Exception innerEx) {
+                    System.err.println("Error creating payment for Order ID: " + order.getOrderId() + ": " + innerEx.getMessage());
+                    innerEx.printStackTrace();
                 }
             }
             
+            // Verify payment creation
+            long paymentCount = paymentRepository.count();
+            System.out.println("DEBUG: Created " + paymentsCreated + " new payments");
+            System.out.println("Total payments in database after seeding: " + paymentCount);
             System.out.println("Payments data seeded successfully!");
         } catch (Exception e) {
             System.err.println("Error seeding payments: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-    
-    private BigDecimal calculateOrderTotal(Order order) {
+    }private BigDecimal calculateOrderTotal(Order order) {
         BigDecimal total = BigDecimal.ZERO;
         
-        for (OrderDetail detail : order.getOrderDetails()) {
+        System.out.println("DEBUG: Calculating total for Order ID: " + order.getOrderId());
+        
+        // Ensure OrderDetails are fetched from DB if they are null or empty in the order object
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        if (orderDetails == null || orderDetails.isEmpty()) {
+            System.out.println("DEBUG: Order details are null or empty, fetching from repository");
+            orderDetails = orderDetailRepository.findByOrderOrderId(order.getOrderId());
+            System.out.println("DEBUG: Found " + orderDetails.size() + " order details from repository");
+        } else {
+            System.out.println("DEBUG: Found " + orderDetails.size() + " order details in order object");
+        }
+        
+        for (OrderDetail detail : orderDetails) {
             BigDecimal itemPrice = detail.getUnitPrice();
             int quantity = detail.getQuantity();
-            total = total.add(itemPrice.multiply(BigDecimal.valueOf(quantity)));
+            BigDecimal lineTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
+            total = total.add(lineTotal);
+            
+            System.out.println("DEBUG: Detail ID: " + detail.getDetailId() + 
+                              ", Product: " + (detail.getProduct() != null ? detail.getProduct().getName() : "null") + 
+                              ", Quantity: " + quantity +
+                              ", Unit Price: " + itemPrice +
+                              ", Line Total: " + lineTotal);
+            
+            // Ensure OrderCustomizations are fetched from DB if they are null or empty
+            List<OrderCustomization> customizations = detail.getOrderCustomizations();
+            if (customizations == null || customizations.isEmpty()) {
+                System.out.println("DEBUG: Customizations are null or empty for Detail ID: " + detail.getDetailId() + ", fetching from repository");
+                customizations = orderCustomizationRepository.findByOrderDetailDetailId(detail.getDetailId());
+                System.out.println("DEBUG: Found " + customizations.size() + " customizations from repository");
+            } else {
+                System.out.println("DEBUG: Found " + customizations.size() + " customizations in detail object");
+            }
             
             // Add customization costs
-            for (OrderCustomization customization : detail.getOrderCustomizations()) {
-                total = total.add(customization.getCustomization().getPriceAdjustment());
+            for (OrderCustomization customization : customizations) {
+                if (customization.getCustomization() != null) {
+                    BigDecimal adjustment = customization.getCustomization().getPriceAdjustment();
+                    total = total.add(adjustment);
+                    System.out.println("DEBUG: Added customization: " + customization.getCustomization().getName() + 
+                                      ", Price Adjustment: " + adjustment);
+                }
             }
         }
         
+        System.out.println("Calculated total for Order ID " + order.getOrderId() + ": " + total);
         return total;
+    }
+    
+    public void seedOrderPromotionsManually(List<Order> orders, List<Promotion> promotions) {
+        seedOrderPromotions(orders, promotions);
     }
     
     private void seedOrderPromotions(List<Order> orders, List<Promotion> promotions) {
@@ -570,6 +679,10 @@ public class ComprehensiveDataSeeder {
             System.err.println("Error seeding order promotions: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    public void seedReviewsManually(List<Order> orders) {
+        seedReviews(orders);
     }
     
     private void seedReviews(List<Order> orders) {

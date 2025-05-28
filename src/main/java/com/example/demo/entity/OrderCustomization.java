@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,13 +10,14 @@ public class OrderCustomization {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_customization_id")
     private Long orderCustomizationId;
-    
-    @ManyToOne
+      @ManyToOne
     @JoinColumn(name = "detail_id", nullable = false)
+    @JsonIgnoreProperties("orderCustomizations")
     private OrderDetail orderDetail;
     
     @ManyToOne
     @JoinColumn(name = "customization_id", nullable = false)
+    @JsonIgnoreProperties("orderCustomizations")
     private Customization customization;
     
     // Constructors

@@ -1,11 +1,12 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", schema = "public")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,17 +23,19 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
-    
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+      @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("order")
     private List<OrderDetail> orderDetails;
-    
-    @OneToMany(mappedBy = "order")
+      @OneToMany(mappedBy = "order")
+    @JsonIgnoreProperties("order")
     private List<Payment> payments;
     
     @OneToMany(mappedBy = "order")
+    @JsonIgnoreProperties("order")
     private List<OrderPromotion> orderPromotions;
     
     @OneToMany(mappedBy = "order")
+    @JsonIgnoreProperties("order")
     private List<Review> reviews;
     
     // Constructors

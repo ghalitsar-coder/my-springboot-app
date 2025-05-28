@@ -1,10 +1,11 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", schema = "public")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,8 +17,8 @@ public class Category {
     
     @Column(columnDefinition = "TEXT")
     private String description;
-    
-    @OneToMany(mappedBy = "category")
+      @OneToMany(mappedBy = "category")
+    @JsonIgnoreProperties("category")
     private List<Product> products;
     
     // Constructors

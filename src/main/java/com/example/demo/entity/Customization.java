@@ -1,11 +1,12 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "customizations")
+@Table(name = "customizations", schema = "public")
 public class Customization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +21,8 @@ public class Customization {
     
     @Column(columnDefinition = "TEXT")
     private String description;
-    
-    @OneToMany(mappedBy = "customization")
+      @OneToMany(mappedBy = "customization")
+    @JsonIgnoreProperties("customization")
     private List<OrderCustomization> orderCustomizations;
     
     // Constructors
