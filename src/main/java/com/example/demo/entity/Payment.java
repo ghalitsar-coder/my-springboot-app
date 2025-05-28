@@ -33,7 +33,21 @@ public class Payment {
     @Column(name = "transaction_id", length = 100)
     private String transactionId;
     
-    // Constructors
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+    
+    @Column(name = "fraud_status", length = 20)
+    private String fraudStatus;
+    
+    @Column(name = "bank", length = 50)
+    private String bank;
+    
+    @Column(name = "va_number", length = 50)
+    private String vaNumber;
+    
+    @Column(name = "three_ds")
+    private Boolean threeDs = false;
+      // Constructors
     public Payment() {}
     
     public Payment(Order order, PaymentType type, BigDecimal amount, PaymentStatus status) {
@@ -41,6 +55,17 @@ public class Payment {
         this.type = type;
         this.amount = amount;
         this.status = status;
+    }
+    
+    public Payment(Order order, PaymentType type, BigDecimal amount, PaymentStatus status, 
+                  String paymentMethod, String bank, String vaNumber) {
+        this.order = order;
+        this.type = type;
+        this.amount = amount;
+        this.status = status;
+        this.paymentMethod = paymentMethod;
+        this.bank = bank;
+        this.vaNumber = vaNumber;
     }
     
     // Getters and Setters
@@ -64,4 +89,19 @@ public class Payment {
     
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    
+    public String getFraudStatus() { return fraudStatus; }
+    public void setFraudStatus(String fraudStatus) { this.fraudStatus = fraudStatus; }
+    
+    public String getBank() { return bank; }
+    public void setBank(String bank) { this.bank = bank; }
+    
+    public String getVaNumber() { return vaNumber; }
+    public void setVaNumber(String vaNumber) { this.vaNumber = vaNumber; }
+    
+    public Boolean getThreeDs() { return threeDs; }
+    public void setThreeDs(Boolean threeDs) { this.threeDs = threeDs; }
 }
