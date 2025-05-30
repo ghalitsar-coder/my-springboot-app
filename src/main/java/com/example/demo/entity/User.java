@@ -1,12 +1,11 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,9 +31,8 @@ public class User {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
-      @OneToMany(mappedBy = "user")
-    @JsonIgnoreProperties("user")
+    private UserRole role = UserRole.CUSTOMER;      @OneToMany(mappedBy = "user")
+    @JsonBackReference("user-orders")
     private List<Order> orders;
       // Constructors
     public User() {}

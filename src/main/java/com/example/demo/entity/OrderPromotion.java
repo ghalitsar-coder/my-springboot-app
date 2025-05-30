@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,9 +10,9 @@ public class OrderPromotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_promotion_id")
     private Long orderPromotionId;
-    
-    @ManyToOne
+      @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference("order-promotions")
     private Order order;
     
     @ManyToOne

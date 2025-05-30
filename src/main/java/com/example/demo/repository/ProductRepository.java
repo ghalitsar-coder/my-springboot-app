@@ -15,4 +15,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query("SELECT p FROM Product p WHERE p.name LIKE %?1%")
     List<Product> findByNameContaining(String name);
+
+    // Get schema information
+    @Query(value = "SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema = 'public'", nativeQuery = true)
+    List<Object[]> getSchemaInfo();
 }

@@ -111,4 +111,31 @@ public class DataSeederController {
                 .body("Error checking data status: " + e.getMessage());
         }
     }
+    
+    /**
+     * Reseed only payments for existing orders
+     */
+    @PostMapping("/reseed-payments")
+    public ResponseEntity<String> reseedPayments() {
+        try {
+            System.out.println("Manual payment reseeding triggered");
+            
+            // Clear existing payments
+            long initialPaymentCount = paymentRepository.count();
+            paymentRepository.deleteAll();
+            
+            // Get all orders and reseed payments
+            List<Order> orders = orderRepository.findAll();
+            dataSeeder.seedPaymentsManually(orders);
+            
+            long newPaymentCount = paymentRepository.count();
+            
+            return ResponseEntity.ok("Payment reseeding completed successfully. Deleted " + 
+                                     initialPaymentCount + " payments and created " + 
+                                     newPaymentCount + " new payments.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error during payment reseeding: " + e.getMessage());
+        }
+    }
 }

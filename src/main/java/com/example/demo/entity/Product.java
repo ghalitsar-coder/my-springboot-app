@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,10 +12,9 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
-    private Long productId;
-      @ManyToOne
+    private Long productId;      @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @JsonIgnoreProperties("products")
+    @JsonManagedReference("category-products")
     private Category category;
     
     @Column(nullable = false, length = 100)
@@ -30,9 +30,8 @@ public class Product {
     private Integer stock = 0;
     
     @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable = true;
-      @OneToMany(mappedBy = "product")
-    @JsonIgnoreProperties("product")
+    private Boolean isAvailable = true;      @OneToMany(mappedBy = "product")
+    @JsonBackReference("product-orderDetails")
     private List<OrderDetail> orderDetails;
     
     // Constructors

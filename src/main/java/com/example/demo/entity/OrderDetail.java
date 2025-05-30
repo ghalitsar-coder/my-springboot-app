@@ -1,25 +1,25 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "orderdetails")
+@Table(name = "orderdetails", schema = "public")
 public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "detail_id")
-    private Long detailId;
-      @ManyToOne
+    private Long detailId;      @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    @JsonIgnoreProperties("orderDetails")
+    @JsonBackReference("order-orderDetails")
     private Order order;
     
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnoreProperties("orderDetails")
+    @JsonManagedReference("product-orderDetails")
     private Product product;
     
     @Column(nullable = false)
@@ -29,9 +29,8 @@ public class OrderDetail {
     private BigDecimal unitPrice;
     
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal discount = BigDecimal.ZERO;
-      @OneToMany(mappedBy = "orderDetail")
-    @JsonIgnoreProperties("orderDetail")
+    private BigDecimal discount = BigDecimal.ZERO;      @OneToMany(mappedBy = "orderDetail")
+    @JsonManagedReference("orderDetail-customizations")
     private List<OrderCustomization> orderCustomizations;
     
     // Constructors

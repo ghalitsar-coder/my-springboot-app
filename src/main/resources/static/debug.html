@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spring Boot Debugging Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .card {
+        margin-bottom: 20px;
+      }
+      pre {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .api-result {
+        min-height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>Spring Boot Debugging Dashboard</h1>
+
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Entity Relationships Test</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <button id="testProducts" class="btn btn-primary">
+                  Test Products API
+                </button>
+                <button id="testCategories" class="btn btn-secondary ms-2">
+                  Test Categories API
+                </button>
+              </div>
+              <div class="mb-3">
+                <button id="testOrders" class="btn btn-success">
+                  Test Orders API
+                </button>
+                <button id="testPayments" class="btn btn-warning ms-2">
+                  Test Payments API
+                </button>
+              </div>
+              <pre id="entityResult" class="api-result">
+Results will appear here...</pre
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">Payment Debugging</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <button id="getPaymentStats" class="btn btn-primary">
+                  Get Payment Stats
+                </button>
+                <button id="getOrderPayments" class="btn btn-info ms-2">
+                  Orders with Payments
+                </button>
+              </div>
+              <div class="mb-3">
+                <button id="reseedPayments" class="btn btn-danger">
+                  Reseed Payments
+                </button>
+              </div>
+              <pre id="paymentResult" class="api-result">
+Results will appear here...</pre
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Database Schema Control</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <strong>Warning:</strong> These actions affect your database schema!
+          </div>
+          <div class="mb-3">
+            <button id="checkSchema" class="btn btn-secondary">
+              Check Current Schema
+            </button>
+            <button id="forceSeeding" class="btn btn-danger ms-2">
+              Force Full Data Seeding
+            </button>
+          </div>
+          <pre id="schemaResult" class="api-result">
+Results will appear here...</pre
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Helper function for API calls
+      async function callApi(url, method = "GET") {
+        try {
+          const response = await fetch(url, { method });
+          let data;
+
+          try {
+            data = await response.json();
+            return { success: true, status: response.status, data };
+          } catch (parseError) {
+            const text = await response.text();
+            return { success: true, status: response.status, data: text };
+          }
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }
+
+      // Format API results for display
+      function formatResult(result) {
+        if (!result.success) {
+          return `Error: ${result.error}`;
+        }
+
+        if (typeof result.data === "string") {
+          return `Status: ${result.status}\n${result.data}`;
+        }
+
+        return `Status: ${result.status}\n${JSON.stringify(
+          result.data,
+          null,
+          2
+        )}`;
+      }
+
+      // Entity Testing
+      document
+        .getElementById("testProducts")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/products");
+          document.getElementById("entityResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("testCategories")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/categories");
+          document.getElementById("entityResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("testOrders")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/orders");
+          document.getElementById("entityResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("testPayments")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/payments");
+          document.getElementById("entityResult").textContent =
+            formatResult(result);
+        });
+
+      // Payment Debugging
+      document
+        .getElementById("getPaymentStats")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/debug/payment-stats");
+          document.getElementById("paymentResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("getOrderPayments")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/orders/payment-summary");
+          document.getElementById("paymentResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("reseedPayments")
+        .addEventListener("click", async () => {
+          if (
+            !confirm(
+              "This will delete all existing payments and create new ones. Continue?"
+            )
+          )
+            return;
+
+          const result = await callApi("/api/debug/reseed-payments", "GET");
+          document.getElementById("paymentResult").textContent =
+            formatResult(result);
+        });
+
+      // Schema Control
+      document
+        .getElementById("checkSchema")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/admin/seeder/status", "POST");
+          document.getElementById("schemaResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("forceSeeding")
+        .addEventListener("click", async () => {
+          if (
+            !confirm(
+              "WARNING: This will delete and recreate ALL data in your database. Are you sure?"
+            )
+          )
+            return;
+
+          const result = await callApi("/api/admin/seeder/force", "POST");
+          document.getElementById("schemaResult").textContent =
+            formatResult(result);
+        });
+    </script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,10 +11,9 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
-    private Long paymentId;
-      @ManyToOne
+    private Long paymentId;      @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    @JsonIgnoreProperties("payments")
+    @JsonBackReference("order-payments")
     private Order order;
     
     @Enumerated(EnumType.STRING)

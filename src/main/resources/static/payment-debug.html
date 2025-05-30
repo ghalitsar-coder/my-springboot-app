@@ -1,91 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Debug Utility</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      .card {
-        margin-bottom: 1.5rem;
-      }
-      pre {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.25rem;
-      }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.25rem;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container mt-5">
-      <h1>Payment Debug Utility</h1>
-
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header bg-primary text-white">
-              Payment Statistics
+        <h1>Payment Debug Utility</h1>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Payment Statistics
+                    </div>
+                    <div class="card-body">
+                        <button id="statButton" class="btn btn-primary mb-3">Get Payment Statistics</button>
+                        <div id="statsResult">
+                            <p>Click the button above to fetch payment statistics.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-              <button id="statButton" class="btn btn-primary mb-3">
-                Get Payment Statistics
-              </button>
-              <div id="statsResult">
-                <p>Click the button above to fetch payment statistics.</p>
-              </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        Reseed Payments
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <strong>Warning:</strong> This will delete all existing payments and create new ones.
+                        </div>
+                        <button id="reseedButton" class="btn btn-warning mb-3">Reseed All Payments</button>
+                        <div id="reseedResult">
+                            <p>Click the button above to reseed all payments.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header bg-warning text-dark">Reseed Payments</div>
-            <div class="card-body">
-              <div class="alert alert-warning">
-                <strong>Warning:</strong> This will delete all existing payments
-                and create new ones.
-              </div>
-              <button id="reseedButton" class="btn btn-warning mb-3">
-                Reseed All Payments
-              </button>
-              <div id="reseedResult">
-                <p>Click the button above to reseed all payments.</p>
-              </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        API Response
+                    </div>
+                    <div class="card-body">
+                        <pre id="apiResponse">No API calls made yet.</pre>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header bg-info text-white">API Response</div>
-            <div class="card-body">
-              <pre id="apiResponse">No API calls made yet.</pre>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <script>
-      document
-        .getElementById("statButton")
-        .addEventListener("click", async () => {
-          try {
-            const response = await fetch("/api/debug/payment-stats");
-            const data = await response.json();
-
-            document.getElementById("apiResponse").textContent = JSON.stringify(
-              data,
-              null,
-              2
-            );
-
-            const statsHtml = `
+        document.getElementById('statButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/debug/payment-stats');
+                const data = await response.json();
+                
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                
+                const statsHtml = `
                     <table class="table table-bordered">
                         <tr>
                             <th>Total Orders</th>
@@ -105,41 +95,27 @@
                         </tr>
                     </table>
                 `;
-
-            document.getElementById("statsResult").innerHTML = statsHtml;
-          } catch (error) {
-            document.getElementById("apiResponse").textContent =
-              "Error: " + error.message;
-            document.getElementById("statsResult").innerHTML =
-              '<div class="alert alert-danger">Failed to fetch statistics</div>';
-          }
+                
+                document.getElementById('statsResult').innerHTML = statsHtml;
+            } catch (error) {
+                document.getElementById('apiResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('statsResult').innerHTML = '<div class="alert alert-danger">Failed to fetch statistics</div>';
+            }
         });
 
-      document
-        .getElementById("reseedButton")
-        .addEventListener("click", async () => {
-          if (
-            !confirm(
-              "Are you sure? This will delete all existing payments and create new ones."
-            )
-          )
-            return;
-
-          try {
-            document.getElementById("reseedButton").disabled = true;
-            document.getElementById("reseedResult").innerHTML =
-              '<div class="alert alert-info">Reseeding in progress...</div>';
-
-            const response = await fetch("/api/debug/reseed-payments");
-            const data = await response.json();
-
-            document.getElementById("apiResponse").textContent = JSON.stringify(
-              data,
-              null,
-              2
-            );
-
-            const reseedHtml = `
+        document.getElementById('reseedButton').addEventListener('click', async () => {
+            if (!confirm('Are you sure? This will delete all existing payments and create new ones.')) return;
+            
+            try {
+                document.getElementById('reseedButton').disabled = true;
+                document.getElementById('reseedResult').innerHTML = '<div class="alert alert-info">Reseeding in progress...</div>';
+                
+                const response = await fetch('/api/debug/reseed-payments');
+                const data = await response.json();
+                
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                
+                const reseedHtml = `
                     <div class="alert alert-success">
                         <strong>Success!</strong> Payments have been reseeded.
                     </div>
@@ -158,17 +134,15 @@
                         </tr>
                     </table>
                 `;
-
-            document.getElementById("reseedResult").innerHTML = reseedHtml;
-          } catch (error) {
-            document.getElementById("apiResponse").textContent =
-              "Error: " + error.message;
-            document.getElementById("reseedResult").innerHTML =
-              '<div class="alert alert-danger">Failed to reseed payments</div>';
-          } finally {
-            document.getElementById("reseedButton").disabled = false;
-          }
+                
+                document.getElementById('reseedResult').innerHTML = reseedHtml;
+            } catch (error) {
+                document.getElementById('apiResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('reseedResult').innerHTML = '<div class="alert alert-danger">Failed to reseed payments</div>';
+            } finally {
+                document.getElementById('reseedButton').disabled = false;
+            }
         });
     </script>
-  </body>
+</body>
 </html>

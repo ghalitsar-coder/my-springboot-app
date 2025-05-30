@@ -1,6 +1,6 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,9 +20,8 @@ public class Customization {
     private BigDecimal priceAdjustment = BigDecimal.ZERO;
     
     @Column(columnDefinition = "TEXT")
-    private String description;
-      @OneToMany(mappedBy = "customization")
-    @JsonIgnoreProperties("customization")
+    private String description;      @OneToMany(mappedBy = "customization")
+    @JsonIgnore
     private List<OrderCustomization> orderCustomizations;
     
     // Constructors

@@ -1,23 +1,21 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "ordercustomizations")
+@Table(name = "ordercustomizations", schema = "public")
 public class OrderCustomization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_customization_id")
-    private Long orderCustomizationId;
-      @ManyToOne
+    private Long orderCustomizationId;      @ManyToOne
     @JoinColumn(name = "detail_id", nullable = false)
-    @JsonIgnoreProperties("orderCustomizations")
+    @JsonBackReference("orderDetail-customizations")
     private OrderDetail orderDetail;
     
     @ManyToOne
     @JoinColumn(name = "customization_id", nullable = false)
-    @JsonIgnoreProperties("orderCustomizations")
     private Customization customization;
     
     // Constructors

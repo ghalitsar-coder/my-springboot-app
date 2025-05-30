@@ -1,6 +1,6 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,9 +12,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private Long orderId;
-    
-    @ManyToOne
+      @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonManagedReference("user-orders")
     private User user;
     
     @Column(name = "order_date", nullable = false)
@@ -22,20 +22,18 @@ public class Order {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status;
-      @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("order")
-    private List<OrderDetail> orderDetails;
-      @OneToMany(mappedBy = "order")
-    @JsonIgnoreProperties("order")
+    private OrderStatus status;    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference("order-orderDetails")
+    private List<OrderDetail> orderDetails;@OneToMany(mappedBy = "order")
+    @JsonManagedReference("order-payments")
     private List<Payment> payments;
     
     @OneToMany(mappedBy = "order")
-    @JsonIgnoreProperties("order")
+    @JsonManagedReference("order-promotions")
     private List<OrderPromotion> orderPromotions;
     
     @OneToMany(mappedBy = "order")
-    @JsonIgnoreProperties("order")
+    @JsonManagedReference("order-reviews")
     private List<Review> reviews;
     
     // Constructors

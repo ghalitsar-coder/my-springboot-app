@@ -1,17 +1,18 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews", schema = "public")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
     private Long reviewId;
-    
-    @ManyToOne
+      @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference("order-reviews")
     private Order order;
     
     @Column(nullable = false)

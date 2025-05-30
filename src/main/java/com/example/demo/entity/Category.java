@@ -1,6 +1,6 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -16,9 +16,8 @@ public class Category {
     private String name;
     
     @Column(columnDefinition = "TEXT")
-    private String description;
-      @OneToMany(mappedBy = "category")
-    @JsonIgnoreProperties("category")
+    private String description;      @OneToMany(mappedBy = "category")
+    @JsonBackReference("category-products")
     private List<Product> products;
     
     // Constructors

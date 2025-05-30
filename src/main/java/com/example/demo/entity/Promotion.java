@@ -1,12 +1,13 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "promotions")
+@Table(name = "promotions", schema = "public")
 public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +31,8 @@ public class Promotion {
     
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-    
-    @OneToMany(mappedBy = "promotion")
+      @OneToMany(mappedBy = "promotion")
+    @JsonIgnoreProperties("promotion")
     private List<OrderPromotion> orderPromotions;
     
     // Constructors
