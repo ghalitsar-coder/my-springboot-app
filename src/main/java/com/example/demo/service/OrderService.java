@@ -4,6 +4,8 @@ import com.example.demo.entity.Order;
 import com.example.demo.entity.OrderDetail;
 import com.example.demo.entity.OrderStatus;
 import com.example.demo.entity.Payment;
+import com.example.demo.entity.PaymentType;
+import com.example.demo.entity.PaymentStatus;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.User;
 import com.example.demo.repository.OrderRepository;
@@ -125,8 +127,120 @@ public class OrderService {
         
         // Set the order details to the order
         savedOrder.setOrderDetails(orderDetails);
+          return savedOrder;
+    }
+    
+    @Transactional
+    public Order createOrderWithPayment(Long userId, List<OrderItemRequest> items, 
+                                       com.example.demo.controller.OrderController.PaymentInfo paymentInfo) {
+        // Create the order first
+        Order order = createOrder(userId, items);
         
-        return savedOrder;
+        // Calculate total amount from order details
+        BigDecimal totalAmount = order.getOrderDetails().stream()
+            .map(detail -> detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Create payment record
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(totalAmount);
+        payment.setPaymentDate(LocalDateTime.now());
+        
+        // Set payment type based on frontend input
+        switch (paymentInfo.getType().toLowerCase()) {
+            case "cash":
+                payment.setType(PaymentType.CASH);
+                payment.setStatus(PaymentStatus.PENDING);
+                payment.setPaymentMethod("cash");
+                break;
+            case "card":
+                payment.setType(PaymentType.CARD);
+                payment.setStatus(PaymentStatus.PENDING);
+                payment.setPaymentMethod("card");
+                break;
+            case "digital":
+                payment.setType(PaymentType.DIGITAL);
+                payment.setStatus(PaymentStatus.PENDING);
+                payment.setPaymentMethod("digital_wallet");
+                break;
+            default:
+                throw new RuntimeException("Invalid payment type: " + paymentInfo.getType());
+        }
+        
+        // Set transaction ID if provided (for Midtrans payments)
+        if (paymentInfo.getTransactionId() != null) {
+            payment.setTransactionId(paymentInfo.getTransactionId());
+        }
+        
+        // Save payment
+        paymentRepository.save(payment);
+        
+        return order;
+    }
+    
+    @Transactional
+    public void updatePaymentStatus(Long orderId, 
+                                   com.example.demo.controller.OrderController.PaymentUpdateRequest request) {
+        // Find the order
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+        
+        // Find the payment by transaction ID or order ID
+        List<Payment> payments = paymentRepository.findByOrderOrderId(orderId);
+        Payment payment = null;
+        
+        if (request.getTransactionId() != null) {
+            // Find by transaction ID first
+            payment = payments.stream()
+                .filter(p -> request.getTransactionId().equals(p.getTransactionId()))
+                .findFirst()
+                .orElse(null);
+        }
+        
+        if (payment == null && !payments.isEmpty()) {
+            // Fallback to latest payment for this order
+            payment = payments.get(payments.size() - 1);
+        }
+        
+        if (payment == null) {
+            throw new RuntimeException("Payment not found for order: " + orderId);
+        }
+          // Update payment status based on Midtrans response
+        switch (request.getStatus().toLowerCase()) {
+            case "settlement":
+            case "capture":
+                payment.setStatus(PaymentStatus.COMPLETED);
+                order.setStatus(OrderStatus.PREPARED);
+                break;
+            case "pending":
+                payment.setStatus(PaymentStatus.PENDING);
+                break;
+            case "deny":
+            case "cancel":
+            case "expire":
+            case "failure":
+                payment.setStatus(PaymentStatus.FAILED);
+                order.setStatus(OrderStatus.CANCELLED);
+                break;
+            default:
+                throw new RuntimeException("Unknown payment status: " + request.getStatus());
+        }
+        
+        // Update additional payment information
+        if (request.getFraudStatus() != null) {
+            payment.setFraudStatus(request.getFraudStatus());
+        }
+        if (request.getBank() != null) {
+            payment.setBank(request.getBank());
+        }
+        if (request.getVaNumber() != null) {
+            payment.setVaNumber(request.getVaNumber());
+        }
+        
+        // Save updated payment and order
+        paymentRepository.save(payment);
+        orderRepository.save(order);
     }
     
     // Inner class for order item requests
