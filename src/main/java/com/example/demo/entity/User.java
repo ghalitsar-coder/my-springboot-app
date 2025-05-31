@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -20,11 +21,12 @@ public class User {
     
     @Column(unique = true, nullable = false, length = 100)
     private String email;
-    
-    @Column(name = "full_name", nullable = false, length = 100)
+      @Column(name = "full_name", nullable = false, length = 100)
+    @JsonProperty("full_name")
     private String fullName;
     
     @Column(name = "phone_number", length = 20)
+    @JsonProperty("phone_number")
     private String phoneNumber;
       @Column(columnDefinition = "TEXT")
     private String address;

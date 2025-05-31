@@ -5,11 +5,16 @@ import com.example.demo.entity.UserRole;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DataSeeder implements CommandLineRunner {    @Autowired
+public class DataSeeder implements CommandLineRunner {
+
+    @Autowired
     private UserRepository userRepository;
+    
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public void run(String... args) throws Exception {
@@ -22,11 +27,10 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
         
         try {
             // Check if admin user exists
-            if (!userRepository.existsByUsername("admin")) {
-                // Create admin user
+            if (!userRepository.existsByUsername("admin")) {                // Create admin user
                 User admin = new User();
                 admin.setUsername("admin");
-                admin.setPassword("admin123"); // Plain text for now
+                admin.setPassword(passwordEncoder.encode("admin123")); // Hash password
                 admin.setEmail("admin@coffeeshop.com");
                 admin.setFullName("System Administrator");
                 admin.setPhoneNumber("+6281234567890");
@@ -37,11 +41,10 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
             }
             
             // Check if cashier user exists
-            if (!userRepository.existsByUsername("cashier")) {
-                // Create cashier user
+            if (!userRepository.existsByUsername("cashier")) {                // Create cashier user
                 User cashier = new User();
                 cashier.setUsername("cashier");
-                cashier.setPassword("cashier123"); // Plain text for now
+                cashier.setPassword(passwordEncoder.encode("cashier123")); // Hash password
                 cashier.setEmail("cashier@coffeeshop.com");
                 cashier.setFullName("Coffee Cashier");
                 cashier.setPhoneNumber("+6281234567891");
@@ -52,11 +55,10 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
             }
             
             // Check if first customer user exists
-            if (!userRepository.existsByUsername("john")) {
-                // Create customer user
+            if (!userRepository.existsByUsername("john")) {                // Create customer user
                 User customer1 = new User();
                 customer1.setUsername("john");
-                customer1.setPassword("john123"); // Plain text for now
+                customer1.setPassword(passwordEncoder.encode("john123")); // Hash password
                 customer1.setEmail("john@example.com");
                 customer1.setFullName("John Doe");
                 customer1.setPhoneNumber("+6281234567892");
@@ -67,11 +69,10 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
             }
             
             // Check if second customer user exists
-            if (!userRepository.existsByUsername("jane")) {
-                // Create customer user
+            if (!userRepository.existsByUsername("jane")) {                // Create customer user
                 User customer2 = new User();
                 customer2.setUsername("jane");
-                customer2.setPassword("jane123"); // Plain text for now
+                customer2.setPassword(passwordEncoder.encode("jane123")); // Hash password
                 customer2.setEmail("jane@example.com");
                 customer2.setFullName("Jane Smith");
                 customer2.setPhoneNumber("+6281234567893");
