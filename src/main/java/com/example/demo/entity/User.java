@@ -6,11 +6,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+public class User {    @Id
+    @Column(name = "id", length = 255)
+    private String id;
     
     @Column(unique = true, nullable = false, length = 50)
     private String username;
@@ -51,11 +49,9 @@ public class User {
         this.email = email;
         this.fullName = fullName;
         this.role = role;
-    }
-    
-    // Getters and Setters
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    }    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

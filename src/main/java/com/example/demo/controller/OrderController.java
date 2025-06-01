@@ -77,16 +77,15 @@ public class OrderController {
     }
       /**
      * Request object for creating orders with payment information
-     */
-    public static class CreateOrderRequest {
-        private Long userId;
+     */    public static class CreateOrderRequest {
+        private String userId;
         private List<OrderItemRequest> items;
         private PaymentInfo paymentInfo;
         
         public CreateOrderRequest() {}
         
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
         
         public List<OrderItemRequest> getItems() { return items; }
         public void setItems(List<OrderItemRequest> items) { this.items = items; }

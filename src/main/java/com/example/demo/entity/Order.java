@@ -11,8 +11,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
-    private Long orderId;
-      @ManyToOne
+    private Long orderId;    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("user-orders")
     private User user;

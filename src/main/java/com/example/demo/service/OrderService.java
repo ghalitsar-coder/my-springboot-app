@@ -81,9 +81,8 @@ public class OrderService {
         
         return result;
     }
-    
-    @Transactional
-    public Order createOrder(Long userId, List<OrderItemRequest> items) {
+      @Transactional
+    public Order createOrder(String userId, List<OrderItemRequest> items) {
         // Find the user
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -129,9 +128,8 @@ public class OrderService {
         savedOrder.setOrderDetails(orderDetails);
           return savedOrder;
     }
-    
-    @Transactional
-    public Order createOrderWithPayment(Long userId, List<OrderItemRequest> items, 
+      @Transactional
+    public Order createOrderWithPayment(String userId, List<OrderItemRequest> items, 
                                        com.example.demo.controller.OrderController.PaymentInfo paymentInfo) {
         // Create the order first
         Order order = createOrder(userId, items);

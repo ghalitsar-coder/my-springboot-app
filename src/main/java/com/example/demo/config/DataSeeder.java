@@ -20,11 +20,11 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
     }    private void seedUsers() {
         System.out.println("Seeding users data...");
         
-        try {
-            // Check if admin user exists
+        try {            // Check if admin user exists
             if (!userRepository.existsByUsername("admin")) {
                 // Create admin user
                 User admin = new User();
+                admin.setId("ADMIN_001"); // Set explicit String ID
                 admin.setUsername("admin");
                 admin.setPassword("admin123"); // Plain text for now
                 admin.setEmail("admin@coffeeshop.com");
@@ -33,13 +33,13 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
                 admin.setAddress("Jakarta, Indonesia");
                 admin.setRole(UserRole.ADMIN);
                 userRepository.save(admin);
-                System.out.println("Admin user created");
+                System.out.println("Admin user created with ID: ADMIN_001");
             }
-            
-            // Check if cashier user exists
+              // Check if cashier user exists
             if (!userRepository.existsByUsername("cashier")) {
                 // Create cashier user
                 User cashier = new User();
+                cashier.setId("CASHIER_001"); // Set explicit String ID
                 cashier.setUsername("cashier");
                 cashier.setPassword("cashier123"); // Plain text for now
                 cashier.setEmail("cashier@coffeeshop.com");
@@ -48,13 +48,13 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
                 cashier.setAddress("Jakarta, Indonesia");
                 cashier.setRole(UserRole.CASHIER);
                 userRepository.save(cashier);
-                System.out.println("Cashier user created");
+                System.out.println("Cashier user created with ID: CASHIER_001");
             }
-            
-            // Check if first customer user exists
+              // Check if first customer user exists
             if (!userRepository.existsByUsername("john")) {
                 // Create customer user
                 User customer1 = new User();
+                customer1.setId("CUSTOMER_001"); // Set explicit String ID
                 customer1.setUsername("john");
                 customer1.setPassword("john123"); // Plain text for now
                 customer1.setEmail("john@example.com");
@@ -63,13 +63,13 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
                 customer1.setAddress("Bandung, Indonesia");
                 customer1.setRole(UserRole.CUSTOMER);
                 userRepository.save(customer1);
-                System.out.println("Customer 1 (John) created");
+                System.out.println("Customer 1 (John) created with ID: CUSTOMER_001");
             }
-            
-            // Check if second customer user exists
+              // Check if second customer user exists
             if (!userRepository.existsByUsername("jane")) {
                 // Create customer user
                 User customer2 = new User();
+                customer2.setId("CUSTOMER_002"); // Set explicit String ID
                 customer2.setUsername("jane");
                 customer2.setPassword("jane123"); // Plain text for now
                 customer2.setEmail("jane@example.com");
@@ -78,7 +78,7 @@ public class DataSeeder implements CommandLineRunner {    @Autowired
                 customer2.setAddress("Surabaya, Indonesia");
                 customer2.setRole(UserRole.CUSTOMER);
                 userRepository.save(customer2);
-                System.out.println("Customer 2 (Jane) created");
+                System.out.println("Customer 2 (Jane) created with ID: CUSTOMER_002");
             }
         } catch (Exception e) {
             System.err.println("Error seeding users: " + e.getMessage());

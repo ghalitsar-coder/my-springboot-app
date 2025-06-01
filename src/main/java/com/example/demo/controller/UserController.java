@@ -20,9 +20,8 @@ public class UserController {
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+      @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable String id) {
         return userService.getUserById(id)
             .map(user -> ResponseEntity.ok().body(user))
             .orElse(ResponseEntity.notFound().build());
@@ -44,9 +43,8 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+      @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User userDetails) {
         try {
             User updatedUser = userService.updateUser(id, userDetails);
             return ResponseEntity.ok(updatedUser);
@@ -54,12 +52,11 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+      @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
-    }    @GetMapping("/test")
+    }@GetMapping("/test")
     public String testEndpoint() {
         return "Hello from Spring Boot! UserController test endpoint is working! 🚀";
     }
@@ -74,9 +71,8 @@ public class UserController {
             return List.of(); // Return empty list for invalid role
         }
     }
-    
-    @GetMapping("/{id}/check-role")
-    public ResponseEntity<Map<String, Boolean>> checkUserRole(@PathVariable Long id) {
+      @GetMapping("/{id}/check-role")
+    public ResponseEntity<Map<String, Boolean>> checkUserRole(@PathVariable String id) {
         return userService.getUserById(id).map(user -> {
             Map<String, Boolean> roleStatus = Map.of(
                 "isAdmin", user.getRole() == UserRole.ADMIN,
@@ -86,9 +82,8 @@ public class UserController {
             return ResponseEntity.ok(roleStatus);
         }).orElse(ResponseEntity.notFound().build());
     }
-    
-    @PutMapping("/{id}/role")
-    public ResponseEntity<User> updateUserRole(@PathVariable Long id, @RequestBody Map<String, String> roleRequest) {
+      @PutMapping("/{id}/role")
+    public ResponseEntity<User> updateUserRole(@PathVariable String id, @RequestBody Map<String, String> roleRequest) {
         try {
             String roleStr = roleRequest.get("role");
             if (roleStr == null) {

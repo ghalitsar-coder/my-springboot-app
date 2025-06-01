@@ -17,8 +17,7 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
-    
-    public Optional<User> getUserById(Long id) {
+      public Optional<User> getUserById(String id) {
         return userRepository.findById(id);
     }
     
@@ -34,8 +33,7 @@ public class UserService {
             throw new RuntimeException("Email already exists");
         }
         return userRepository.save(user);
-    }
-      public User updateUser(Long id, User userDetails) {
+    }    public User updateUser(String id, User userDetails) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -50,8 +48,7 @@ public class UserService {
         }
         
         return userRepository.save(user);
-    }
-      public void deleteUser(Long id) {
+    }    public void deleteUser(String id) {
         userRepository.deleteById(id);
     }
     
@@ -59,20 +56,17 @@ public class UserService {
     public List<User> getUsersByRole(UserRole role) {
         return userRepository.findByRole(role);
     }
-    
-    public boolean isAdmin(Long userId) {
+      public boolean isAdmin(String userId) {
         return getUserById(userId)
             .map(user -> user.getRole() == UserRole.ADMIN)
             .orElse(false);
     }
-    
-    public boolean isCashier(Long userId) {
+      public boolean isCashier(String userId) {
         return getUserById(userId)
             .map(user -> user.getRole() == UserRole.CASHIER)
             .orElse(false);
     }
-    
-    public boolean hasAdminOrCashierRole(Long userId) {
+      public boolean hasAdminOrCashierRole(String userId) {
         return getUserById(userId)
             .map(user -> user.getRole() == UserRole.ADMIN || user.getRole() == UserRole.CASHIER)
             .orElse(false);
