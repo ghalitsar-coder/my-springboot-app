@@ -40,10 +40,10 @@ public class ProductController {
     @GetMapping("/search")
     public List<Product> searchProducts(@RequestParam String name) {
         return productService.searchProducts(name);
-    }
-    
-    @PostMapping
+    }    @PostMapping
     public Product createProduct(@RequestBody Product product) {
+        // Reset ID untuk insert baru
+        product.setProductId(null);
         return productService.createProduct(product);
     }
     

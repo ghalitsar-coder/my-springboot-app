@@ -20,9 +20,12 @@ public class UserService {
       public Optional<User> getUserById(String id) {
         return userRepository.findById(id);
     }
-    
-    public Optional<User> getUserByUsername(String username) {
+      public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+    
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
     
     public User createUser(User user) {

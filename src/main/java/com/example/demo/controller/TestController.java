@@ -158,4 +158,17 @@ public class TestController {
         
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * Simple test endpoint for JSON deserialization without entity relationships
+     */
+    @PostMapping("/simple-json")
+    public ResponseEntity<Map<String, Object>> testSimpleJson(@RequestBody Map<String, Object> data) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "JSON deserialization works!");
+        response.put("receivedData", data);
+        response.put("timestamp", new java.util.Date());
+        return ResponseEntity.ok(response);
+    }
 }
