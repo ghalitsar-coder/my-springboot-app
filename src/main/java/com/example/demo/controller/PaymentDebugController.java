@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.config.ComprehensiveDataSeeder;
 import com.example.demo.entity.Order;
 import com.example.demo.entity.Payment;
 import com.example.demo.repository.OrderRepository;
@@ -21,15 +20,10 @@ import java.util.Map;
 public class PaymentDebugController {
 
     @Autowired
-    private ComprehensiveDataSeeder dataSeeder;
-
-    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private PaymentRepository paymentRepository;
-
-    @GetMapping("/reseed-payments")
+    private PaymentRepository paymentRepository;    @GetMapping("/reseed-payments")
     public ResponseEntity<?> reseedPayments() {
         // Delete all existing payments
         long beforeCount = paymentRepository.count();
@@ -38,15 +32,15 @@ public class PaymentDebugController {
         // Get all orders
         List<Order> orders = orderRepository.findAll();
         
-        // Reseed payments
-        dataSeeder.seedPaymentsManually(orders);
+        // Note: Payment reseeding functionality removed (seeder was deleted)
+        // You would need to implement payment creation logic here if needed
         
-        // Count payments after reseeding
+        // Count payments after operation
         long afterCount = paymentRepository.count();
         
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("message", "Payment reseeding completed");
+        response.put("message", "Payment deletion completed (seeding removed)");
         response.put("orders", orders.size());
         response.put("paymentsBefore", beforeCount);
         response.put("paymentsAfter", afterCount);
