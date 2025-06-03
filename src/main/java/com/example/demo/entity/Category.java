@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -16,8 +17,11 @@ public class Category {
     private String name;
     
     @Column(columnDefinition = "TEXT")
-    private String description;      @OneToMany(mappedBy = "category")
+    private String description;    
+    
+    @OneToMany(mappedBy = "category")
     @JsonBackReference("category-products")
+    @JsonIgnore
     private List<Product> products;
     
     // Constructors
@@ -39,5 +43,6 @@ public class Category {
     public void setDescription(String description) { this.description = description; }
     
     public List<Product> getProducts() { return products; }
+    @JsonIgnore
     public void setProducts(List<Product> products) { this.products = products; }
 }

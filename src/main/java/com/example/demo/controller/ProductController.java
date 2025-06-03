@@ -1,6 +1,9 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ProductDTO;
+import com.example.demo.entity.Category;
 import com.example.demo.entity.Product;
+import com.example.demo.repository.CategoryRepository;
 import com.example.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +14,11 @@ import java.util.List;
 @RequestMapping("/api/products")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
+      @Autowired
+    private ProductService productService;
     
     @Autowired
-    private ProductService productService;
+    private CategoryRepository categoryRepository;
     
     @GetMapping("/hello")
     public String testConnection() {
@@ -40,11 +45,16 @@ public class ProductController {
     @GetMapping("/search")
     public List<Product> searchProducts(@RequestParam String name) {
         return productService.searchProducts(name);
-    }    @PostMapping
-    public Product createProduct(@RequestBody Product product) {
+    }    
+    
+    // ✅ SOLUSI 3: Entity dengan @JsonIgnore pada setter untuk POST/PUT
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         // Reset ID untuk insert baru
         product.setProductId(null);
-        return productService.createProduct(product);
+        // category field akan di-ignore saat deserialization karena @JsonIgnore pada setter
+        Product savedProduct = productService.createProduct(product);
+        return ResponseEntity.ok(savedProduct);
     }
     
     @PutMapping("/{id}")
