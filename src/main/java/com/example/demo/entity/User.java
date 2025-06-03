@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.example.demo.converter.UserRoleConverter;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -24,14 +23,12 @@ public class User {    @Id
     private String fullName;
     
     @Column(name = "phone_number", length = 20)
-    private String phoneNumber;      @Column(columnDefinition = "TEXT")
+    private String phoneNumber;    @Column(columnDefinition = "TEXT")
     private String address;
-      @Convert(converter = UserRoleConverter.class)
-    @Column(name = "role", nullable = false, columnDefinition = "user_role")
-    private UserRole role = UserRole.CUSTOMER;@OneToMany(mappedBy = "user")
+
+    @OneToMany(mappedBy = "user")
     @JsonBackReference("user-orders")
-    private List<Order> orders;
-      // Constructors
+    private List<Order> orders;    // Constructors
     public User() {}
     
     public User(String username, String password, String email, String fullName) {
@@ -39,16 +36,7 @@ public class User {    @Id
         this.password = password;
         this.email = email;
         this.fullName = fullName;
-        this.role = UserRole.CUSTOMER; // default role
-    }
-    
-    public User(String username, String password, String email, String fullName, UserRole role) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.fullName = fullName;
-        this.role = role;
-    }    // Getters and Setters
+    }// Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     
@@ -65,12 +53,8 @@ public class User {    @Id
     public void setFullName(String fullName) { this.fullName = fullName; }
     
     public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-      public String getAddress() { return address; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }    public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-    
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
     
     public List<Order> getOrders() { return orders; }
     public void setOrders(List<Order> orders) { this.orders = orders; }

@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/products")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
-      @Autowired
+    @Autowired
     private ProductService productService;
     
     @Autowired
@@ -45,25 +45,58 @@ public class ProductController {
     @GetMapping("/search")
     public List<Product> searchProducts(@RequestParam String name) {
         return productService.searchProducts(name);
-    }    
+    }
     
-    // ✅ SOLUSI 3: Entity dengan @JsonIgnore pada setter untuk POST/PUT
+    // ✅ SOLUSI: Menggunakan DTO untuk input, Entity untuk output
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        // Reset ID untuk insert baru
-        product.setProductId(null);
-        // category field akan di-ignore saat deserialization karena @JsonIgnore pada setter
-        Product savedProduct = productService.createProduct(product);
-        return ResponseEntity.ok(savedProduct);
+    public ResponseEntity<Product> createProduct(@RequestBody ProductDTO productDTO) {
+        try {
+            // Convert DTO ke Entity
+            Product product = new Product();
+            product.setName(productDTO.getName());
+            product.setDescription(productDTO.getDescription());
+            product.setPrice(productDTO.getPrice());
+            product.setStock(productDTO.getStock());
+            product.setIsAvailable(productDTO.getIsAvailable() != null ? productDTO.getIsAvailable() : true);
+            
+            // Set Category by ID
+            if (productDTO.getCategoryId() != null) {
+                Category category = categoryRepository.findById(productDTO.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + productDTO.getCategoryId()));
+                product.setCategory(category);
+            }
+            
+            Product savedProduct = productService.createProduct(product);
+            return ResponseEntity.ok(savedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
         try {
-            Product updatedProduct = productService.updateProduct(id, productDetails);
-            return ResponseEntity.ok(updatedProduct);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return productService.getProductById(id)
+                .map(product -> {
+                    product.setName(productDTO.getName());
+                    product.setDescription(productDTO.getDescription());
+                    product.setPrice(productDTO.getPrice());
+                    product.setStock(productDTO.getStock());
+                    product.setIsAvailable(productDTO.getIsAvailable() != null ? productDTO.getIsAvailable() : product.getIsAvailable());
+                    
+                    // Update Category if provided
+                    if (productDTO.getCategoryId() != null) {
+                        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                            .orElseThrow(() -> new RuntimeException("Category not found with id: " + productDTO.getCategoryId()));
+                        product.setCategory(category);
+                    }
+                    
+                    Product updatedProduct = productService.updateProduct(id, product);
+                    return ResponseEntity.ok(updatedProduct);
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
     

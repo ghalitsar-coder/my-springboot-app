@@ -22,7 +22,7 @@ public class SecurityConfig {    @Bean
             .csrf().disable()
             .authorizeHttpRequests()
             .requestMatchers("/**").permitAll() // Allow all requests for now
-            .anyRequest().authenticated()
+            .anyRequest().permitAll() // Changed from authenticated() to permitAll()
             .and()
             .httpBasic();
         

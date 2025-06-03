@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -98,10 +97,8 @@ public class ComprehensiveDataSeeder {
             admin.setUsername("admin");
             admin.setPassword(password);
             admin.setEmail("admin@coffeeshop.com");
-            admin.setFullName("System Administrator");
-            admin.setPhoneNumber("+6281234567890");
+            admin.setFullName("System Administrator");            admin.setPhoneNumber("+6281234567890");
             admin.setAddress("Jakarta, Indonesia");
-            admin.setRole(UserRole.ADMIN);
             userRepository.save(admin);
             users.add(admin);
               // Create a cashier user
@@ -110,10 +107,8 @@ public class ComprehensiveDataSeeder {
             cashier.setUsername("cashier");
             cashier.setPassword(password);
             cashier.setEmail("cashier@coffeeshop.com");
-            cashier.setFullName("Maria Cashier");
-            cashier.setPhoneNumber("+6282345678901");
+            cashier.setFullName("Maria Cashier");            cashier.setPhoneNumber("+6282345678901");
             cashier.setAddress("Jakarta, Indonesia");
-            cashier.setRole(UserRole.CASHIER);
             userRepository.save(cashier);
             users.add(cashier);
               // Create regular customers
@@ -122,10 +117,8 @@ public class ComprehensiveDataSeeder {
             customer1.setUsername("john");
             customer1.setPassword(password);
             customer1.setEmail("john@gmail.com");
-            customer1.setFullName("John Doe");
-            customer1.setPhoneNumber("+6283456789012");
+            customer1.setFullName("John Doe");            customer1.setPhoneNumber("+6283456789012");
             customer1.setAddress("Bandung, Indonesia");
-            customer1.setRole(UserRole.CUSTOMER);
             userRepository.save(customer1);
             users.add(customer1);
             
@@ -134,10 +127,8 @@ public class ComprehensiveDataSeeder {
             customer2.setUsername("alice");
             customer2.setPassword(password);
             customer2.setEmail("alice@gmail.com");
-            customer2.setFullName("Alice Johnson");
-            customer2.setPhoneNumber("+6284567890123");
+            customer2.setFullName("Alice Johnson");            customer2.setPhoneNumber("+6284567890123");
             customer2.setAddress("Surabaya, Indonesia");
-            customer2.setRole(UserRole.CUSTOMER);
             userRepository.save(customer2);
             users.add(customer2);
             
@@ -145,11 +136,9 @@ public class ComprehensiveDataSeeder {
             customer3.setId("CUSTOMER_003"); // Set explicit String ID
             customer3.setUsername("bob");
             customer3.setPassword(password);
-            customer3.setEmail("bob@gmail.com");
-            customer3.setFullName("Bob Smith");
+            customer3.setEmail("bob@gmail.com");            customer3.setFullName("Bob Smith");
             customer3.setPhoneNumber("+6285678901234");
             customer3.setAddress("Yogyakarta, Indonesia");
-            customer3.setRole(UserRole.CUSTOMER);
             userRepository.save(customer3);
             users.add(customer3);
             
@@ -450,15 +439,12 @@ public class ComprehensiveDataSeeder {
     private List<Order> seedOrders(List<User> users) {
         System.out.println("Seeding orders data...");
         List<Order> orders = new ArrayList<>();
-        
-        try {
-            // Get customer users
-            List<User> customers = users.stream()
-                .filter(u -> UserRole.CUSTOMER.equals(u.getRole()))
-                .toList();
+          try {
+            // Get all users as potential customers (since role is removed)
+            List<User> customers = users;
                 
             if (customers.isEmpty()) {
-                throw new RuntimeException("No customers found for orders");
+                throw new RuntimeException("No users found for orders");
             }
             
             // Create completed orders

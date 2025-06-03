@@ -1,37 +1,22 @@
 package com.example.demo.dto;
 
-import com.example.demo.entity.UserRole;
-
 /**
- * DTO untuk User - tidak ada Jackson annotations, aman untuk POST/PUT
+ * DTO for User - no Jackson annotations, safe for POST/PUT
  */
 public class UserDTO {
-    private String id;
-    private String username;
+    private String id;    private String username;
     private String password;
     private String email;
     private String fullName;
     private String phoneNumber;
     private String address;
-    private UserRole role;
 
     // Constructors
-    public UserDTO() {}
-
-    public UserDTO(String username, String password, String email, String fullName) {
+    public UserDTO() {}    public UserDTO(String username, String password, String email, String fullName) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.fullName = fullName;
-        this.role = UserRole.CUSTOMER; // default role
-    }
-
-    public UserDTO(String username, String password, String email, String fullName, UserRole role) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.fullName = fullName;
-        this.role = role;
     }
 
     // Getters and Setters
@@ -51,11 +36,6 @@ public class UserDTO {
     public void setFullName(String fullName) { this.fullName = fullName; }
 
     public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public String getAddress() { return address; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }    public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
 }
