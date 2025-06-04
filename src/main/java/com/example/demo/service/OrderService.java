@@ -138,41 +138,74 @@ public class OrderService {
         BigDecimal totalAmount = order.getOrderDetails().stream()
             .map(detail -> detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        // Create payment record
+          // Create payment record
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
         payment.setPaymentDate(LocalDateTime.now());
         
-        // Set payment type based on frontend input
-        switch (paymentInfo.getType().toLowerCase()) {
-            case "cash":
-                payment.setType(PaymentType.CASH);
-                payment.setStatus(PaymentStatus.PENDING);
-                payment.setPaymentMethod("cash");
-                break;
-            case "card":
-                payment.setType(PaymentType.CARD);
-                payment.setStatus(PaymentStatus.PENDING);
-                payment.setPaymentMethod("card");
-                break;
-            case "digital":
-                payment.setType(PaymentType.DIGITAL);
-                payment.setStatus(PaymentStatus.PENDING);
-                payment.setPaymentMethod("digital_wallet");
-                break;
-            default:
-                throw new RuntimeException("Invalid payment type: " + paymentInfo.getType());
+        // Set payment type using the enum's fromString method
+        try {
+            PaymentType paymentType = PaymentType.fromString(paymentInfo.getType());
+            payment.setType(paymentType);
+            payment.setStatus(PaymentStatus.PENDING);
+            
+            // Set payment method based on type
+            String paymentMethod = paymentInfo.getPaymentMethod();
+            if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+                // Set default payment method based on type
+                switch (paymentType) {
+                    case CASH:
+                        paymentMethod = "cash";
+                        break;
+                    case CARD:
+                    case CREDIT_CARD:
+                    case DEBIT_CARD:
+                        paymentMethod = "card";
+                        break;
+                    case DIGITAL:
+                    case E_WALLET:
+                        paymentMethod = "digital_wallet";
+                        break;
+                    case BANK_TRANSFER:
+                        paymentMethod = "bank_transfer";
+                        break;
+                    case VIRTUAL_ACCOUNT:
+                        paymentMethod = "virtual_account";
+                        break;
+                    default:
+                        paymentMethod = paymentType.getValue();
+                        break;
+                }
+            }
+            payment.setPaymentMethod(paymentMethod);
+            
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid payment type: " + paymentInfo.getType());
         }
-        
-        // Set transaction ID if provided (for Midtrans payments)
+          // Set transaction ID if provided (for Midtrans payments)
         if (paymentInfo.getTransactionId() != null) {
             payment.setTransactionId(paymentInfo.getTransactionId());
         }
         
-        // Save payment
-        paymentRepository.save(payment);
+        // Set additional payment fields if provided
+        if (paymentInfo.getBank() != null) {
+            payment.setBank(paymentInfo.getBank());
+        }
+        if (paymentInfo.getVaNumber() != null) {
+            payment.setVaNumber(paymentInfo.getVaNumber());
+        }
+        if (paymentInfo.getThreeDs() != null) {
+            payment.setThreeDs(paymentInfo.getThreeDs());
+        }
+          // Save payment
+        Payment savedPayment = paymentRepository.save(payment);
+        
+        // Add the payment to the order's payments list
+        if (order.getPayments() == null) {
+            order.setPayments(new ArrayList<>());
+        }
+        order.getPayments().add(savedPayment);
         
         return order;
     }

@@ -44,9 +44,28 @@ public class Payment {
     
     @Column(name = "va_number", length = 50)
     private String vaNumber;
-    
-    @Column(name = "three_ds")
+      @Column(name = "three_ds")
     private Boolean threeDs = false;
+    
+    // Additional Midtrans-specific fields
+    @Column(name = "midtrans_order_id", length = 100)
+    private String midtransOrderId;
+    
+    @Column(name = "gross_amount", precision = 10, scale = 2)
+    private BigDecimal grossAmount;
+    
+    @Column(name = "payment_channel", length = 50)
+    private String paymentChannel;
+    
+    @Column(name = "expiry_time")
+    private LocalDateTime expiryTime;
+    
+    @Column(name = "payment_reference", length = 100)
+    private String paymentReference;
+    
+    @Column(name = "signature_key", length = 255)
+    private String signatureKey;
+    
       // Constructors
     public Payment() {}
     
@@ -101,7 +120,25 @@ public class Payment {
     
     public String getVaNumber() { return vaNumber; }
     public void setVaNumber(String vaNumber) { this.vaNumber = vaNumber; }
-    
-    public Boolean getThreeDs() { return threeDs; }
+      public Boolean getThreeDs() { return threeDs; }
     public void setThreeDs(Boolean threeDs) { this.threeDs = threeDs; }
+    
+    // Midtrans-specific getters and setters
+    public String getMidtransOrderId() { return midtransOrderId; }
+    public void setMidtransOrderId(String midtransOrderId) { this.midtransOrderId = midtransOrderId; }
+    
+    public BigDecimal getGrossAmount() { return grossAmount; }
+    public void setGrossAmount(BigDecimal grossAmount) { this.grossAmount = grossAmount; }
+    
+    public String getPaymentChannel() { return paymentChannel; }
+    public void setPaymentChannel(String paymentChannel) { this.paymentChannel = paymentChannel; }
+    
+    public LocalDateTime getExpiryTime() { return expiryTime; }
+    public void setExpiryTime(LocalDateTime expiryTime) { this.expiryTime = expiryTime; }
+    
+    public String getPaymentReference() { return paymentReference; }
+    public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }
+    
+    public String getSignatureKey() { return signatureKey; }
+    public void setSignatureKey(String signatureKey) { this.signatureKey = signatureKey; }
 }

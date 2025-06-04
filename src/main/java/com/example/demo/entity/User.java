@@ -25,17 +25,27 @@ public class User {    @Id
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;    @Column(columnDefinition = "TEXT")
     private String address;
+    
+    @Column(length = 50)
+    private String role = "customer";
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference("user-orders")
     private List<Order> orders;    // Constructors
-    public User() {}
-    
-    public User(String username, String password, String email, String fullName) {
+    public User() {}    public User(String username, String password, String email, String fullName) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.fullName = fullName;
+        this.role = "customer";
+    }
+    
+    public User(String username, String password, String email, String fullName, String role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.fullName = fullName;
+        this.role = role != null ? role : "customer";
     }// Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -55,6 +65,9 @@ public class User {    @Id
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }    public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
     
     public List<Order> getOrders() { return orders; }
     public void setOrders(List<Order> orders) { this.orders = orders; }

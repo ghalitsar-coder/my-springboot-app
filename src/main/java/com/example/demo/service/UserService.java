@@ -71,11 +71,11 @@ public class UserService {
         }
         if (userDetails.getFullName() != null && userDetails.getFullName().trim().isEmpty()) {
             throw new InvalidUserDataException("Full name cannot be empty");
-        }
-          user.setFullName(userDetails.getFullName());
+        }        user.setFullName(userDetails.getFullName());
         user.setEmail(userDetails.getEmail());
         user.setPhoneNumber(userDetails.getPhoneNumber());
         user.setAddress(userDetails.getAddress());
+        user.setRole(userDetails.getRole());
         
         return userRepository.save(user);
     }    public void deleteUser(String id) {

@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ErrorResponseDTO;
 import com.example.demo.entity.Category;
 import com.example.demo.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,15 +56,29 @@ public class CategoryController {
                     return ResponseEntity.ok(updatedCategory);
                 })
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
+    }    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
-        return categoryRepository.findById(id)
-                .map(category -> {
-                    categoryRepository.delete(category);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            return categoryRepository.findById(id)
+                    .map(category -> {
+                        // Check if category has associated products
+                        if (!category.getProducts().isEmpty()) {
+                            ErrorResponseDTO error = new ErrorResponseDTO(400, "Bad Request", 
+                                "Cannot delete category because it has " + category.getProducts().size() + " associated products. Please reassign or delete the products first.", 
+                                "/api/categories/" + id);
+                            return ResponseEntity.badRequest().body(error);
+                        }
+                        
+                        categoryRepository.delete(category);
+                        return ResponseEntity.ok().build();
+                    })
+                    .orElse(ResponseEntity.notFound().build());
+                    
+        } catch (Exception e) {
+            ErrorResponseDTO error = new ErrorResponseDTO(500, "Internal Server Error",
+                "An error occurred while deleting the category: " + e.getMessage(), 
+                "/api/categories/" + id);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }
