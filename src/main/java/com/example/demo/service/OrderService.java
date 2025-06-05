@@ -43,6 +43,13 @@ public class OrderService {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
     
+    // Add promotion and Midtrans services
+    @Autowired
+    private PromotionService promotionService;
+    
+    @Autowired
+    private MidtransService midtransService;
+
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
@@ -198,7 +205,120 @@ public class OrderService {
         if (paymentInfo.getThreeDs() != null) {
             payment.setThreeDs(paymentInfo.getThreeDs());
         }
-          // Save payment
+        
+        // Save payment
+        Payment savedPayment = paymentRepository.save(payment);
+        
+        // Add the payment to the order's payments list
+        if (order.getPayments() == null) {
+            order.setPayments(new ArrayList<>());
+        }
+        order.getPayments().add(savedPayment);
+        
+        return order;
+    }
+    
+    /**
+     * Enhanced method to create order with payment and promotion support
+     */
+    @Transactional
+    public Order createOrderWithPaymentAndPromotions(String userId, List<OrderItemRequest> items, 
+                                                   com.example.demo.controller.OrderController.PaymentInfo paymentInfo,
+                                                   List<Long> promotionIds) {
+        // Create the order first
+        Order order = createOrder(userId, items);
+        
+        // Calculate original total amount from order details
+        BigDecimal originalAmount = order.getOrderDetails().stream()
+            .map(detail -> detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Apply promotions and calculate final amount
+        PromotionService.CalculationResult promotionResult = 
+            promotionService.calculateFinalAmount(originalAmount, promotionIds);
+        
+        // Apply promotions to order (create OrderPromotion records)
+        promotionService.applyPromotionsToOrder(order, promotionIds);
+        
+        // Create payment record with final amount
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(promotionResult.getFinalAmount()); // Use discounted amount
+        payment.setPaymentDate(LocalDateTime.now());
+        
+        // Set original amount in grossAmount field for reference
+        payment.setGrossAmount(originalAmount);
+        
+        // Set payment type using the enum's fromString method
+        try {
+            PaymentType paymentType = PaymentType.fromString(paymentInfo.getType());
+            payment.setType(paymentType);
+            payment.setStatus(PaymentStatus.PENDING);
+            
+            // Set payment method based on type
+            String paymentMethod = paymentInfo.getPaymentMethod();
+            if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+                // Set default payment method based on type
+                switch (paymentType) {
+                    case CASH:
+                        paymentMethod = "cash";
+                        break;
+                    case CARD:
+                    case CREDIT_CARD:
+                    case DEBIT_CARD:
+                        paymentMethod = "card";
+                        break;
+                    case DIGITAL:
+                    case E_WALLET:
+                        paymentMethod = "digital_wallet";
+                        break;
+                    case BANK_TRANSFER:
+                        paymentMethod = "bank_transfer";
+                        break;
+                    case VIRTUAL_ACCOUNT:
+                        paymentMethod = "virtual_account";
+                        break;
+                    default:
+                        paymentMethod = paymentType.getValue();
+                        break;
+                }
+            }
+            payment.setPaymentMethod(paymentMethod);
+            
+            // For Midtrans payments, prepare additional data
+            if ("credit_card".equals(paymentMethod) || "bank_transfer".equals(paymentMethod) || 
+                "digital_wallet".equals(paymentMethod) || "virtual_account".equals(paymentMethod)) {
+                
+                // Set Midtrans order ID
+                payment.setMidtransOrderId("ORDER-" + order.getOrderId());
+                
+                // Store promotion metadata in custom fields (can be retrieved later)
+                if (promotionResult.getTotalDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                    payment.setPaymentReference("DISCOUNT_APPLIED:" + promotionResult.getTotalDiscount().toString());
+                }
+            }
+            
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid payment type: " + paymentInfo.getType());
+        }
+        
+        // Set transaction ID if provided (for Midtrans payments)
+        if (paymentInfo.getTransactionId() != null) {
+            payment.setTransactionId(paymentInfo.getTransactionId());
+        }
+        
+        // Set additional payment fields if provided
+        if (paymentInfo.getBank() != null) {
+            payment.setBank(paymentInfo.getBank());
+        }
+        if (paymentInfo.getVaNumber() != null) {
+            payment.setVaNumber(paymentInfo.getVaNumber());
+        }
+        if (paymentInfo.getThreeDs() != null) {
+            payment.setThreeDs(paymentInfo.getThreeDs());
+        }
+        
+        // Save payment
         Payment savedPayment = paymentRepository.save(payment);
         
         // Add the payment to the order's payments list

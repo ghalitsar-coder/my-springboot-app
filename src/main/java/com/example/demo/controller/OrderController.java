@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Order;
 import com.example.demo.service.OrderService;
+import com.example.demo.service.PromotionService;
 import com.example.demo.service.OrderService.OrderItemRequest;
 import com.example.demo.dto.ErrorResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class OrderController {
     
     @Autowired
     private OrderService orderService;
+    
+    @Autowired
+    private PromotionService promotionService;
     
     @GetMapping
     public List<Order> getAllOrders() {
@@ -90,6 +94,49 @@ public class OrderController {
         }
     }
       /**
+     * Create a new order with payment and promotion support
+     */
+    @PostMapping("/with-promotions")
+    public ResponseEntity<?> createOrderWithPromotions(@RequestBody CreateOrderWithPromotionsRequest request) {
+        try {
+            Order order = orderService.createOrderWithPaymentAndPromotions(
+                request.getUserId(), 
+                request.getItems(), 
+                request.getPaymentInfo(),
+                request.getPromotionIds()
+            );
+            
+            // Return the order with payment information
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                e.getMessage(),
+                "/api/orders/with-promotions"
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }    /**
+     * Get available promotions for order creation
+     */
+    @GetMapping("/available-promotions")
+    public ResponseEntity<?> getAvailablePromotions() {
+        try {
+            List<com.example.demo.entity.Promotion> promotions = promotionService.getActivePromotions();
+            return ResponseEntity.ok(promotions);
+        } catch (Exception e) {
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                "Failed to fetch available promotions",
+                "/api/orders/available-promotions"
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
      * Request object for creating orders with payment information
      */    public static class CreateOrderRequest {
         private String userId;
@@ -272,5 +319,29 @@ public class OrderController {
             }
             throw new RuntimeException("Invalid Midtrans order ID format: " + midtransOrderId);
         }
+    }
+    
+    /**
+     * Request object for creating orders with payment and promotion information
+     */    
+    public static class CreateOrderWithPromotionsRequest {
+        private String userId;
+        private List<OrderItemRequest> items;
+        private PaymentInfo paymentInfo;
+        private List<Long> promotionIds;
+        
+        public CreateOrderWithPromotionsRequest() {}
+        
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        
+        public List<OrderItemRequest> getItems() { return items; }
+        public void setItems(List<OrderItemRequest> items) { this.items = items; }
+        
+        public PaymentInfo getPaymentInfo() { return paymentInfo; }
+        public void setPaymentInfo(PaymentInfo paymentInfo) { this.paymentInfo = paymentInfo; }
+        
+        public List<Long> getPromotionIds() { return promotionIds; }
+        public void setPromotionIds(List<Long> promotionIds) { this.promotionIds = promotionIds; }
     }
 }
