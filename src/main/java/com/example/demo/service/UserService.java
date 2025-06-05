@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -33,15 +34,17 @@ public class UserService {
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }    public User createUser(User user) {
+        // Generate ID if not provided (for non-BetterAuth users)
+        if (user.getId() == null || user.getId().trim().isEmpty()) {
+            user.setId(UUID.randomUUID().toString());
+        }
+        
         // Validate required fields
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new InvalidUserDataException("Username is required");
         }
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
             throw new InvalidUserDataException("Email is required");
-        }
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            throw new InvalidUserDataException("Password is required");
         }
         if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
             throw new InvalidUserDataException("Full name is required");
@@ -57,8 +60,10 @@ public class UserService {
             throw new UserAlreadyExistsException("Email '" + user.getEmail() + "' already exists");
         }
         
-        // Encrypt password before saving
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Encrypt password only if provided (for non-BetterAuth users)
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         
         return userRepository.save(user);
     }public User updateUser(String id, User userDetails) {
