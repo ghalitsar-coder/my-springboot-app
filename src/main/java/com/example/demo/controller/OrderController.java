@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -121,15 +122,24 @@ public class OrderController {
      * Get available promotions for order creation
      */
     @GetMapping("/available-promotions")
-    public ResponseEntity<?> getAvailablePromotions() {
+    public ResponseEntity<?> getAvailablePromotions(@RequestParam(required = false) BigDecimal orderTotal) {
         try {
-            List<com.example.demo.entity.Promotion> promotions = promotionService.getActivePromotions();
+            List<com.example.demo.entity.Promotion> promotions;
+            
+            if (orderTotal != null) {
+                // Get eligible promotions based on order total
+                promotions = promotionService.getEligiblePromotions(orderTotal);
+            } else {
+                // Get all active promotions
+                promotions = promotionService.getActivePromotions();
+            }
+            
             return ResponseEntity.ok(promotions);
         } catch (Exception e) {
             ErrorResponseDTO errorResponse = new ErrorResponseDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "Failed to fetch available promotions",
+                "Failed to fetch available promotions: " + e.getMessage(),
                 "/api/orders/available-promotions"
             );
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

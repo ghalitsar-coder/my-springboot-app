@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -15,7 +14,6 @@ public class User {    @Id
     private String username;
     
     @Column(nullable = true)  // Made nullable for BetterAuth integration
-    @JsonIgnore  // Never include password in JSON responses for security
     private String password;
     
     @Column(unique = true, nullable = false, length = 100)

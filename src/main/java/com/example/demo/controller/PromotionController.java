@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.ErrorResponseDTO;
 import com.example.demo.entity.Promotion;
 import com.example.demo.repository.PromotionRepository;
+import com.example.demo.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,9 @@ public class PromotionController {
 
     @Autowired
     private PromotionRepository promotionRepository;
+    
+    @Autowired
+    private PromotionService promotionService;
 
     /**
      * Create a new promotion
@@ -45,10 +49,36 @@ public class PromotionController {
             if (promotionData.get("endDate") != null) {
                 promotion.setEndDate(LocalDate.parse((String) promotionData.get("endDate")));
             }
-            
-            // Handle active status
+              // Handle active status
             if (promotionData.get("isActive") != null) {
                 promotion.setIsActive((Boolean) promotionData.get("isActive"));
+            }
+            
+            // Handle new promotion rule fields
+            if (promotionData.get("minimumPurchaseAmount") != null) {
+                Object minAmount = promotionData.get("minimumPurchaseAmount");
+                if (minAmount instanceof Number) {
+                    promotion.setMinimumPurchaseAmount(BigDecimal.valueOf(((Number) minAmount).doubleValue()));
+                } else if (minAmount instanceof String) {
+                    promotion.setMinimumPurchaseAmount(new BigDecimal((String) minAmount));
+                }
+            }
+            
+            if (promotionData.get("maximumUses") != null) {
+                promotion.setMaximumUses((Integer) promotionData.get("maximumUses"));
+            }
+            
+            if (promotionData.get("promotionType") != null) {
+                promotion.setPromotionType((String) promotionData.get("promotionType"));
+            }
+            
+            if (promotionData.get("maxDiscountAmount") != null) {
+                Object maxDiscount = promotionData.get("maxDiscountAmount");
+                if (maxDiscount instanceof Number) {
+                    promotion.setMaxDiscountAmount(BigDecimal.valueOf(((Number) maxDiscount).doubleValue()));
+                } else if (maxDiscount instanceof String) {
+                    promotion.setMaxDiscountAmount(new BigDecimal((String) maxDiscount));
+                }
             }
             
             Promotion savedPromotion = promotionRepository.save(promotion);
@@ -69,9 +99,7 @@ public class PromotionController {
     public ResponseEntity<List<Promotion>> getAllPromotions() {
         List<Promotion> promotions = promotionRepository.findAll();
         return ResponseEntity.ok(promotions);
-    }
-
-    /**
+    }    /**
      * Get active promotions only
      */
     @GetMapping("/active")
@@ -83,6 +111,19 @@ public class PromotionController {
                         p.getEndDate().isAfter(LocalDate.now().minusDays(1)))
             .toList();
         return ResponseEntity.ok(activePromotions);
+    }
+    
+    /**
+     * Get eligible promotions for a given order total
+     */
+    @GetMapping("/eligible")
+    public ResponseEntity<List<Promotion>> getEligiblePromotions(@RequestParam BigDecimal orderTotal) {
+        try {
+            List<Promotion> eligiblePromotions = promotionService.getEligiblePromotions(orderTotal);
+            return ResponseEntity.ok(eligiblePromotions);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -123,9 +164,35 @@ public class PromotionController {
                         }
                         if (promotionData.containsKey("endDate")) {
                             promotion.setEndDate(LocalDate.parse((String) promotionData.get("endDate")));
-                        }
-                        if (promotionData.containsKey("isActive")) {
+                        }                        if (promotionData.containsKey("isActive")) {
                             promotion.setIsActive((Boolean) promotionData.get("isActive"));
+                        }
+                        
+                        // Handle new promotion rule fields
+                        if (promotionData.containsKey("minimumPurchaseAmount")) {
+                            Object minAmount = promotionData.get("minimumPurchaseAmount");
+                            if (minAmount instanceof Number) {
+                                promotion.setMinimumPurchaseAmount(BigDecimal.valueOf(((Number) minAmount).doubleValue()));
+                            } else if (minAmount instanceof String) {
+                                promotion.setMinimumPurchaseAmount(new BigDecimal((String) minAmount));
+                            }
+                        }
+                        
+                        if (promotionData.containsKey("maximumUses")) {
+                            promotion.setMaximumUses((Integer) promotionData.get("maximumUses"));
+                        }
+                        
+                        if (promotionData.containsKey("promotionType")) {
+                            promotion.setPromotionType((String) promotionData.get("promotionType"));
+                        }
+                        
+                        if (promotionData.containsKey("maxDiscountAmount")) {
+                            Object maxDiscount = promotionData.get("maxDiscountAmount");
+                            if (maxDiscount instanceof Number) {
+                                promotion.setMaxDiscountAmount(BigDecimal.valueOf(((Number) maxDiscount).doubleValue()));
+                            } else if (maxDiscount instanceof String) {
+                                promotion.setMaxDiscountAmount(new BigDecimal((String) maxDiscount));
+                            }
                         }
                         
                         Promotion updatedPromotion = promotionRepository.save(promotion);

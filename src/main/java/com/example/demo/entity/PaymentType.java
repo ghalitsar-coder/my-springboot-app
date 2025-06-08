@@ -8,7 +8,8 @@ public enum PaymentType {
     DEBIT_CARD("debit_card"),
     BANK_TRANSFER("bank_transfer"),
     E_WALLET("e_wallet"),
-    VIRTUAL_ACCOUNT("virtual_account");
+    VIRTUAL_ACCOUNT("virtual_account"),
+    QRIS("qris");
     
     private final String value;
     

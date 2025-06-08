@@ -176,9 +176,11 @@ public class OrderService {
                         break;
                     case BANK_TRANSFER:
                         paymentMethod = "bank_transfer";
-                        break;
-                    case VIRTUAL_ACCOUNT:
+                        break;                    case VIRTUAL_ACCOUNT:
                         paymentMethod = "virtual_account";
+                        break;
+                    case QRIS:
+                        paymentMethod = "qris";
                         break;
                     default:
                         paymentMethod = paymentType.getValue();
@@ -274,9 +276,11 @@ public class OrderService {
                         break;
                     case BANK_TRANSFER:
                         paymentMethod = "bank_transfer";
-                        break;
-                    case VIRTUAL_ACCOUNT:
+                        break;                    case VIRTUAL_ACCOUNT:
                         paymentMethod = "virtual_account";
+                        break;
+                    case QRIS:
+                        paymentMethod = "qris";
                         break;
                     default:
                         paymentMethod = paymentType.getValue();
@@ -284,10 +288,10 @@ public class OrderService {
                 }
             }
             payment.setPaymentMethod(paymentMethod);
-            
-            // For Midtrans payments, prepare additional data
+              // For Midtrans payments, prepare additional data
             if ("credit_card".equals(paymentMethod) || "bank_transfer".equals(paymentMethod) || 
-                "digital_wallet".equals(paymentMethod) || "virtual_account".equals(paymentMethod)) {
+                "digital_wallet".equals(paymentMethod) || "virtual_account".equals(paymentMethod) || 
+                "qris".equals(paymentMethod)) {
                 
                 // Set Midtrans order ID
                 payment.setMidtransOrderId("ORDER-" + order.getOrderId());

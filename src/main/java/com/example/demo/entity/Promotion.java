@@ -28,23 +28,50 @@ public class Promotion {
     
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
-    
-    @Column(name = "is_active", nullable = false)
+      @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-      @OneToMany(mappedBy = "promotion")
+    
+    // Promotion rules/conditions
+    @Column(name = "minimum_purchase_amount", precision = 10, scale = 2)
+    private BigDecimal minimumPurchaseAmount;
+    
+    @Column(name = "maximum_uses")
+    private Integer maximumUses;
+    
+    @Column(name = "current_uses")
+    private Integer currentUses = 0;
+    
+    @Column(name = "promotion_type", length = 50)
+    private String promotionType = "PERCENTAGE"; // PERCENTAGE, FIXED_AMOUNT
+    
+    @Column(name = "max_discount_amount", precision = 10, scale = 2)
+    private BigDecimal maxDiscountAmount;
+    
+    @OneToMany(mappedBy = "promotion")
     @JsonIgnoreProperties("promotion")
     private List<OrderPromotion> orderPromotions;
     
     // Constructors
     public Promotion() {}
-    
-    public Promotion(String name, String description, BigDecimal discountValue, 
+      public Promotion(String name, String description, BigDecimal discountValue, 
                     LocalDate startDate, LocalDate endDate) {
         this.name = name;
         this.description = description;
         this.discountValue = discountValue;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+    
+    public Promotion(String name, String description, BigDecimal discountValue, 
+                    LocalDate startDate, LocalDate endDate, 
+                    BigDecimal minimumPurchaseAmount, Integer maximumUses) {
+        this.name = name;
+        this.description = description;
+        this.discountValue = discountValue;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.minimumPurchaseAmount = minimumPurchaseAmount;
+        this.maximumUses = maximumUses;
     }
     
     // Getters and Setters
@@ -68,7 +95,21 @@ public class Promotion {
     
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
-    
-    public List<OrderPromotion> getOrderPromotions() { return orderPromotions; }
+      public List<OrderPromotion> getOrderPromotions() { return orderPromotions; }
     public void setOrderPromotions(List<OrderPromotion> orderPromotions) { this.orderPromotions = orderPromotions; }
+    
+    public BigDecimal getMinimumPurchaseAmount() { return minimumPurchaseAmount; }
+    public void setMinimumPurchaseAmount(BigDecimal minimumPurchaseAmount) { this.minimumPurchaseAmount = minimumPurchaseAmount; }
+    
+    public Integer getMaximumUses() { return maximumUses; }
+    public void setMaximumUses(Integer maximumUses) { this.maximumUses = maximumUses; }
+    
+    public Integer getCurrentUses() { return currentUses; }
+    public void setCurrentUses(Integer currentUses) { this.currentUses = currentUses; }
+    
+    public String getPromotionType() { return promotionType; }
+    public void setPromotionType(String promotionType) { this.promotionType = promotionType; }
+    
+    public BigDecimal getMaxDiscountAmount() { return maxDiscountAmount; }
+    public void setMaxDiscountAmount(BigDecimal maxDiscountAmount) { this.maxDiscountAmount = maxDiscountAmount; }
 }

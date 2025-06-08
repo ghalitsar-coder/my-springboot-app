@@ -20,9 +20,7 @@ public class PromotionService {
     private PromotionRepository promotionRepository;
 
     @Autowired
-    private OrderPromotionRepository orderPromotionRepository;
-
-    /**
+    private OrderPromotionRepository orderPromotionRepository;    /**
      * Get all active promotions
      */
     public List<Promotion> getActivePromotions() {
@@ -32,6 +30,40 @@ public class PromotionService {
                         promotion.getStartDate().compareTo(today) <= 0 &&
                         promotion.getEndDate().compareTo(today) >= 0)
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get eligible promotions for a given order total
+     */
+    public List<Promotion> getEligiblePromotions(BigDecimal orderTotal) {
+        return getActivePromotions().stream()
+                .filter(promotion -> isPromotionEligible(promotion, orderTotal))
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Check if a promotion is eligible for the given order total
+     */
+    public boolean isPromotionEligible(Promotion promotion, BigDecimal orderTotal) {
+        // Check if promotion is valid (active and within date range)
+        if (!isPromotionValid(promotion)) {
+            return false;
+        }
+        
+        // Check minimum purchase amount
+        if (promotion.getMinimumPurchaseAmount() != null && 
+            orderTotal.compareTo(promotion.getMinimumPurchaseAmount()) < 0) {
+            return false;
+        }
+        
+        // Check maximum uses
+        if (promotion.getMaximumUses() != null && 
+            promotion.getCurrentUses() != null &&
+            promotion.getCurrentUses() >= promotion.getMaximumUses()) {
+            return false;
+        }
+        
+        return true;
     }    /**
      * Calculate discount amount for a given order total and promotion
      */
@@ -40,18 +72,37 @@ public class PromotionService {
             return BigDecimal.ZERO;
         }
 
-        // Handle both decimal (0.15 for 15%) and percentage (15 for 15%) formats
+        BigDecimal discount = BigDecimal.ZERO;
+        String promotionType = promotion.getPromotionType();
         BigDecimal discountValue = promotion.getDiscountValue();
         
-        // If discount value is greater than 1, treat it as percentage (e.g., 15 = 15%)
-        // If discount value is less than or equal to 1, treat it as decimal (e.g., 0.15 = 15%)
-        if (discountValue.compareTo(BigDecimal.ONE) > 0) {
-            // Percentage format: divide by 100
-            return orderTotal.multiply(discountValue.divide(BigDecimal.valueOf(100)));
+        if ("FIXED_AMOUNT".equals(promotionType)) {
+            // Fixed amount discount
+            discount = discountValue;
         } else {
-            // Decimal format: use directly
-            return orderTotal.multiply(discountValue);
+            // Percentage discount (default)
+            // Handle both decimal (0.15 for 15%) and percentage (15 for 15%) formats
+            if (discountValue.compareTo(BigDecimal.ONE) > 0) {
+                // Percentage format: divide by 100
+                discount = orderTotal.multiply(discountValue.divide(BigDecimal.valueOf(100)));
+            } else {
+                // Decimal format: use directly
+                discount = orderTotal.multiply(discountValue);
+            }
         }
+        
+        // Apply maximum discount amount limit if specified
+        if (promotion.getMaxDiscountAmount() != null && 
+            discount.compareTo(promotion.getMaxDiscountAmount()) > 0) {
+            discount = promotion.getMaxDiscountAmount();
+        }
+        
+        // Ensure discount doesn't exceed order total
+        if (discount.compareTo(orderTotal) > 0) {
+            discount = orderTotal;
+        }
+        
+        return discount;
     }
 
     /**
@@ -81,9 +132,7 @@ public class PromotionService {
         }
         
         return new CalculationResult(originalAmount, totalDiscount, finalAmount, promotionIds);
-    }
-
-    /**
+    }    /**
      * Apply promotions to an order (create OrderPromotion records)
      */
     public void applyPromotionsToOrder(Order order, List<Long> promotionIds) {
@@ -94,6 +143,15 @@ public class PromotionService {
                     .collect(Collectors.toList());
             
             for (Promotion promotion : validPromotions) {
+                // Increment usage count
+                if (promotion.getCurrentUses() == null) {
+                    promotion.setCurrentUses(1);
+                } else {
+                    promotion.setCurrentUses(promotion.getCurrentUses() + 1);
+                }
+                promotionRepository.save(promotion);
+                
+                // Create order-promotion relationship
                 OrderPromotion orderPromotion = new OrderPromotion(order, promotion);
                 orderPromotionRepository.save(orderPromotion);
             }
