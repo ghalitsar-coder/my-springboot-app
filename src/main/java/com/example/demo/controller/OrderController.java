@@ -354,4 +354,37 @@ public class OrderController {
         public List<Long> getPromotionIds() { return promotionIds; }
         public void setPromotionIds(List<Long> promotionIds) { this.promotionIds = promotionIds; }
     }
+    
+    /**
+     * Update order status
+     */
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestBody OrderStatusUpdateRequest request) {
+        try {
+            orderService.updateOrderStatus(id, request.getStatus());
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                e.getMessage(),
+                "/api/orders/" + id + "/status"
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * Request object for updating order status
+     */
+    public static class OrderStatusUpdateRequest {
+        private String status;
+        
+        public OrderStatusUpdateRequest() {}
+        
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
+    }
 }
