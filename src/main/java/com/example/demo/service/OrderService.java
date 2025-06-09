@@ -144,8 +144,7 @@ public class OrderService {
         // Calculate total amount from order details
         BigDecimal totalAmount = order.getOrderDetails().stream()
             .map(detail -> detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-          // Create payment record
+            .reduce(BigDecimal.ZERO, BigDecimal::add);        // Create payment record
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
@@ -155,7 +154,13 @@ public class OrderService {
         try {
             PaymentType paymentType = PaymentType.fromString(paymentInfo.getType());
             payment.setType(paymentType);
-            payment.setStatus(PaymentStatus.PENDING);
+            
+            // Set payment status - CASH payments are automatically completed, others are pending
+            if (paymentType == PaymentType.CASH) {
+                payment.setStatus(PaymentStatus.COMPLETED);
+            } else {
+                payment.setStatus(PaymentStatus.PENDING);
+            }
             
             // Set payment method based on type
             String paymentMethod = paymentInfo.getPaymentMethod();
@@ -241,8 +246,7 @@ public class OrderService {
         
         // Apply promotions to order (create OrderPromotion records)
         promotionService.applyPromotionsToOrder(order, promotionIds);
-        
-        // Create payment record with final amount
+          // Create payment record with final amount
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(promotionResult.getFinalAmount()); // Use discounted amount
@@ -255,7 +259,13 @@ public class OrderService {
         try {
             PaymentType paymentType = PaymentType.fromString(paymentInfo.getType());
             payment.setType(paymentType);
-            payment.setStatus(PaymentStatus.PENDING);
+            
+            // Set payment status - CASH payments are automatically completed, others are pending
+            if (paymentType == PaymentType.CASH) {
+                payment.setStatus(PaymentStatus.COMPLETED);
+            } else {
+                payment.setStatus(PaymentStatus.PENDING);
+            }
             
             // Set payment method based on type
             String paymentMethod = paymentInfo.getPaymentMethod();
@@ -333,22 +343,42 @@ public class OrderService {
         
         return order;
     }
-    
-    /**
+      /**
      * Update order status
      */
     @Transactional
-    public void updateOrderStatus(Long orderId, String newStatus) {
+    public Order updateOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
         
         // Validate status
         try {
             OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
+            OrderStatus oldStatus = order.getStatus();
             order.setStatus(status);
-            orderRepository.save(order);
+            
+            // If order status changes to DELIVERED, automatically complete all pending payments
+            if (status == OrderStatus.DELIVERED && oldStatus != OrderStatus.DELIVERED) {
+                updatePaymentsToCompleted(order);
+            }
+            
+            return orderRepository.save(order);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid order status: " + newStatus);
+        }
+    }
+    
+    /**
+     * Helper method to update all pending payments to completed when order is delivered
+     */
+    @Transactional
+    private void updatePaymentsToCompleted(Order order) {
+        List<Payment> payments = paymentRepository.findByOrderOrderId(order.getOrderId());
+        for (Payment payment : payments) {
+            if (payment.getStatus() == PaymentStatus.PENDING) {
+                payment.setStatus(PaymentStatus.COMPLETED);
+                paymentRepository.save(payment);
+            }
         }
     }
     

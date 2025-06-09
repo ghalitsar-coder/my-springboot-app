@@ -20,8 +20,7 @@ public class OrderController {
     
     @Autowired
     private OrderService orderService;
-    
-    @Autowired
+      @Autowired
     private PromotionService promotionService;
     
     @GetMapping
@@ -354,17 +353,15 @@ public class OrderController {
         public List<Long> getPromotionIds() { return promotionIds; }
         public void setPromotionIds(List<Long> promotionIds) { this.promotionIds = promotionIds; }
     }
-    
-    /**
+      /**
      * Update order status
      */
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Long id,
-            @RequestBody OrderStatusUpdateRequest request) {
-        try {
-            orderService.updateOrderStatus(id, request.getStatus());
-            return ResponseEntity.ok().build();
+            @RequestBody OrderStatusUpdateRequest request) {        try {
+            Order updatedOrder = orderService.updateOrderStatus(id, request.getStatus());
+            return ResponseEntity.ok(updatedOrder);
         } catch (RuntimeException e) {
             ErrorResponseDTO errorResponse = new ErrorResponseDTO(
                 HttpStatus.BAD_REQUEST.value(),
