@@ -53,9 +53,17 @@ public class OrderService {
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
-    
-    public Optional<Order> getOrderById(Long id) {
+      public Optional<Order> getOrderById(Long id) {
         return orderRepository.findById(id);
+    }
+    
+    /**
+     * Get orders by user ID
+     */
+    public List<Order> getOrdersByUserId(String userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return orderRepository.findByUser(user);
     }
     
     /**

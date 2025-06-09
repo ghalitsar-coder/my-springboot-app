@@ -44,14 +44,42 @@ public class OrderController {
             .map(order -> ResponseEntity.ok(order.getPayments()))
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    
-    /**
+      /**
      * Get payment summary for all orders
      */
     @GetMapping("/payment-summary")
     public ResponseEntity<?> getOrdersPaymentSummary() {
         return ResponseEntity.ok(orderService.getOrdersWithPaymentInfo());
-    }    /**
+    }
+
+    /**
+     * Get orders by user ID
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getOrdersByUserId(@PathVariable String userId) {
+        try {
+            List<Order> orders = orderService.getOrdersByUserId(userId);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found", 
+                e.getMessage(),
+                "/api/orders/user/" + userId
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        } catch (Exception e) {
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                "Failed to fetch orders for user: " + e.getMessage(),
+                "/api/orders/user/" + userId
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
      * Create a new order with payment information
      */
     @PostMapping
