@@ -13,7 +13,7 @@ public class User {    @Id
     @Column(unique = true, nullable = false, length = 50)
     private String username;
     
-    @Column(nullable = false)
+    @Column(nullable = true)  // Made nullable for BetterAuth integration
     private String password;
     
     @Column(unique = true, nullable = false, length = 100)

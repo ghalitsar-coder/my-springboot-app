@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Promotion Testing Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .api-result {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+      .card {
+        margin-bottom: 1.5rem;
+      }
+      .promotion-card {
+        border-left: 4px solid #28a745;
+      }
+      .order-card {
+        border-left: 4px solid #007bff;
+      }
+      .payment-card {
+        border-left: 4px solid #ffc107;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid mt-4">
+      <h1 class="mb-4">🎉 Promotion & Payment Integration Testing</h1>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="promotions-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#promotions"
+            type="button"
+            role="tab"
+          >
+            Promotions
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="orders-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#orders"
+            type="button"
+            role="tab"
+          >
+            Orders with Promotions
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="midtrans-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#midtrans"
+            type="button"
+            role="tab"
+          >
+            Midtrans Integration
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="analytics-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#analytics"
+            type="button"
+            role="tab"
+          >
+            Analytics
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="myTabContent">
+        <!-- Promotions Tab -->
+        <div class="tab-pane fade show active" id="promotions" role="tabpanel">
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <div class="card promotion-card">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0">📋 Promotion Management</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button id="getPromotions" class="btn btn-success">
+                      Get All Promotions
+                    </button>
+                    <button
+                      id="getActivePromotions"
+                      class="btn btn-success ms-2"
+                    >
+                      Get Active Promotions
+                    </button>
+                  </div>
+                  <div class="mb-3">
+                    <button id="createTestPromotion" class="btn btn-primary">
+                      Create Test Promotion
+                    </button>
+                  </div>
+                  <pre id="promotionResult" class="api-result">
+Click a button to see results...</pre
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0">🏷️ Create New Promotion</h5>
+                </div>
+                <div class="card-body">
+                  <form id="promotionForm">
+                    <div class="mb-3">
+                      <label for="promotionName" class="form-label">Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="promotionName"
+                        required
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label for="promotionDescription" class="form-label"
+                        >Description</label
+                      >
+                      <textarea
+                        class="form-control"
+                        id="promotionDescription"
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label for="discountValue" class="form-label"
+                        >Discount Percentage</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="discountValue"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <label for="startDate" class="form-label"
+                          >Start Date</label
+                        >
+                        <input
+                          type="date"
+                          class="form-control"
+                          id="startDate"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          id="endDate"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <button type="submit" class="btn btn-primary">
+                        Create Promotion
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div class="tab-pane fade" id="orders" role="tabpanel">
+          <div class="row mt-4">
+            <div class="col-md-8">
+              <div class="card order-card">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">🛒 Order with Promotion Testing</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button id="getAvailablePromotions" class="btn btn-primary">
+                      Get Available Promotions
+                    </button>
+                    <button
+                      id="testOrderWithPromotion"
+                      class="btn btn-success ms-2"
+                    >
+                      Create Test Order with Promotion
+                    </button>
+                  </div>
+                  <div class="mb-3">
+                    <button id="getOrderPromotions" class="btn btn-info">
+                      Get Order-Promotion Relationships
+                    </button>
+                  </div>
+                  <pre id="orderResult" class="api-result">
+Click a button to see results...</pre
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header bg-warning text-dark">
+                  <h5 class="mb-0">📊 Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                  <div id="quickStats">
+                    <p>Total Promotions: <span id="totalPromotions">-</span></p>
+                    <p>
+                      Active Promotions: <span id="activePromotions">-</span>
+                    </p>
+                    <p>
+                      Orders with Promotions:
+                      <span id="ordersWithPromotions">-</span>
+                    </p>
+                  </div>
+                  <button id="refreshStats" class="btn btn-warning btn-sm">
+                    Refresh Stats
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Midtrans Tab -->
+        <div class="tab-pane fade" id="midtrans" role="tabpanel">
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <div class="card payment-card">
+                <div class="card-header bg-warning text-dark">
+                  <h5 class="mb-0">💳 Midtrans Payment Simulation</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button
+                      id="simulateMidtransPayment"
+                      class="btn btn-warning"
+                    >
+                      Simulate Midtrans Payment
+                    </button>
+                    <button id="simulateWebhook" class="btn btn-danger ms-2">
+                      Simulate Webhook
+                    </button>
+                  </div>
+                  <div class="mb-3">
+                    <button id="getPaymentStats" class="btn btn-info">
+                      Get Payment Statistics
+                    </button>
+                  </div>
+                  <pre id="midtransResult" class="api-result">
+Click a button to see results...</pre
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header bg-dark text-white">
+                  <h5 class="mb-0">🔧 Webhook Testing</h5>
+                </div>
+                <div class="card-body">
+                  <form id="webhookForm">
+                    <div class="mb-3">
+                      <label for="webhookOrderId" class="form-label"
+                        >Order ID</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="webhookOrderId"
+                        value="ORDER-1"
+                        required
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label for="webhookStatus" class="form-label"
+                        >Transaction Status</label
+                      >
+                      <select class="form-control" id="webhookStatus" required>
+                        <option value="settlement">Settlement (Success)</option>
+                        <option value="pending">Pending</option>
+                        <option value="deny">Deny</option>
+                        <option value="cancel">Cancel</option>
+                        <option value="expire">Expire</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label for="webhookAmount" class="form-label"
+                        >Gross Amount</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="webhookAmount"
+                        value="100000"
+                        required
+                      />
+                    </div>
+                    <button type="submit" class="btn btn-dark">
+                      Send Webhook
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+          <div class="row mt-4">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header bg-secondary text-white">
+                  <h5 class="mb-0">📈 Promotion & Payment Analytics</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button id="getAnalytics" class="btn btn-secondary">
+                      Get Complete Analytics
+                    </button>
+                    <button
+                      id="getDiscountStats"
+                      class="btn btn-secondary ms-2"
+                    >
+                      Discount Statistics
+                    </button>
+                  </div>
+                  <pre id="analyticsResult" class="api-result">
+Click a button to see analytics...</pre
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Utility function for API calls
+      async function callApi(endpoint, method = "GET", data = null) {
+        try {
+          const options = {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          };
+
+          if (data) {
+            options.body = JSON.stringify(data);
+          }
+
+          const response = await fetch(endpoint, options);
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          return { error: error.message };
+        }
+      }
+
+      function formatResult(result) {
+        return JSON.stringify(result, null, 2);
+      }
+
+      // Promotion Management
+      document
+        .getElementById("getPromotions")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/promotions");
+          document.getElementById("promotionResult").textContent =
+            formatResult(result);
+          updateStats();
+        });
+
+      document
+        .getElementById("getActivePromotions")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/orders/available-promotions");
+          document.getElementById("promotionResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("createTestPromotion")
+        .addEventListener("click", async () => {
+          const testPromotion = {
+            name: "Test Holiday Discount",
+            description: "Test promotion for system validation",
+            discountValue: 15.0,
+            startDate: "2025-01-01",
+            endDate: "2025-12-31",
+            isActive: true,
+          };
+
+          const result = await callApi(
+            "/api/promotions",
+            "POST",
+            testPromotion
+          );
+          document.getElementById("promotionResult").textContent =
+            formatResult(result);
+          updateStats();
+        });
+
+      // Promotion Form
+      document
+        .getElementById("promotionForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const promotionData = {
+            name: document.getElementById("promotionName").value,
+            description: document.getElementById("promotionDescription").value,
+            discountValue: parseFloat(
+              document.getElementById("discountValue").value
+            ),
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value,
+            isActive: true,
+          };
+
+          const result = await callApi(
+            "/api/promotions",
+            "POST",
+            promotionData
+          );
+          document.getElementById("promotionResult").textContent =
+            formatResult(result);
+
+          if (!result.error) {
+            document.getElementById("promotionForm").reset();
+            updateStats();
+          }
+        });
+
+      // Order Testing
+      document
+        .getElementById("getAvailablePromotions")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/orders/available-promotions");
+          document.getElementById("orderResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("testOrderWithPromotion")
+        .addEventListener("click", async () => {
+          const testOrder = {
+            userId: "user1",
+            items: [
+              { productId: 1, quantity: 2 },
+              { productId: 2, quantity: 1 },
+            ],
+            paymentInfo: {
+              type: "credit_card",
+              paymentMethod: "credit_card",
+            },
+            promotionIds: [1], // Assuming promotion ID 1 exists
+          };
+
+          const result = await callApi(
+            "/api/orders/with-promotions",
+            "POST",
+            testOrder
+          );
+          document.getElementById("orderResult").textContent =
+            formatResult(result);
+          updateStats();
+        });
+
+      document
+        .getElementById("getOrderPromotions")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/order-promotions");
+          document.getElementById("orderResult").textContent =
+            formatResult(result);
+        });
+
+      // Midtrans Testing
+      document
+        .getElementById("simulateMidtransPayment")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/debug/payment-stats");
+          document.getElementById("midtransResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("simulateWebhook")
+        .addEventListener("click", async () => {
+          const webhookData = {
+            orderId: "ORDER-1",
+            status: "settlement",
+            grossAmount: "100000",
+            transactionId: "TXN-" + Date.now(),
+            paymentChannel: "credit_card",
+          };
+
+          const result = await callApi(
+            "/api/orders/midtrans/notification",
+            "POST",
+            webhookData
+          );
+          document.getElementById("midtransResult").textContent =
+            formatResult(result);
+        });
+
+      document
+        .getElementById("getPaymentStats")
+        .addEventListener("click", async () => {
+          const result = await callApi("/api/debug/payment-stats");
+          document.getElementById("midtransResult").textContent =
+            formatResult(result);
+        });
+
+      // Webhook Form
+      document
+        .getElementById("webhookForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const webhookData = {
+            orderId: document.getElementById("webhookOrderId").value,
+            status: document.getElementById("webhookStatus").value,
+            grossAmount: document.getElementById("webhookAmount").value,
+            transactionId: "TXN-" + Date.now(),
+            paymentChannel: "credit_card",
+            signatureKey: "test-signature",
+          };
+
+          const result = await callApi(
+            "/api/orders/midtrans/notification",
+            "POST",
+            webhookData
+          );
+          document.getElementById("midtransResult").textContent =
+            formatResult(result);
+        });
+
+      // Analytics
+      document
+        .getElementById("getAnalytics")
+        .addEventListener("click", async () => {
+          const promotions = await callApi("/api/promotions");
+          const orders = await callApi("/api/orders");
+          const payments = await callApi("/api/debug/payment-stats");
+
+          const analytics = {
+            promotions: promotions,
+            orders: orders,
+            payments: payments,
+            timestamp: new Date().toISOString(),
+          };
+
+          document.getElementById("analyticsResult").textContent =
+            formatResult(analytics);
+        });
+
+      document
+        .getElementById("getDiscountStats")
+        .addEventListener("click", async () => {
+          const orderPromotions = await callApi("/api/order-promotions");
+          document.getElementById("analyticsResult").textContent =
+            formatResult(orderPromotions);
+        });
+
+      // Stats Update
+      document
+        .getElementById("refreshStats")
+        .addEventListener("click", updateStats);
+
+      async function updateStats() {
+        try {
+          const promotions = await callApi("/api/promotions");
+          const activePromotions = await callApi(
+            "/api/orders/available-promotions"
+          );
+          const orderPromotions = await callApi("/api/order-promotions");
+
+          document.getElementById("totalPromotions").textContent =
+            Array.isArray(promotions) ? promotions.length : 0;
+          document.getElementById("activePromotions").textContent =
+            Array.isArray(activePromotions) ? activePromotions.length : 0;
+          document.getElementById("ordersWithPromotions").textContent =
+            Array.isArray(orderPromotions) ? orderPromotions.length : 0;
+        } catch (error) {
+          console.error("Failed to update stats:", error);
+        }
+      }
+
+      // Auto-load stats on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        updateStats();
+
+        // Set default dates for promotion form
+        const today = new Date();
+        const nextYear = new Date(
+          today.getFullYear() + 1,
+          today.getMonth(),
+          today.getDate()
+        );
+
+        document.getElementById("startDate").value = today
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("endDate").value = nextYear
+          .toISOString()
+          .split("T")[0];
+      });
+    </script>
+  </body>
+</html>
